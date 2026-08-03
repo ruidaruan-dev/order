@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订单进度台</title>
+    <style id="theme-vars">
+/* ============================================================
+   订单进度台 — 品牌令牌
+   方向 A+D：阶段轨道结构骨架 + 瑞士极简执行美学
+   暖纸底 / 深 petrol 主色 / 发丝级分隔 / 单一强调
+   ============================================================ */
+
+:root {
+  /* —— 表面与文字 —— */
+  --brand-background: #f5f3ee;          /* 暖纸 paper */
+  --brand-foreground: #1b1a17;          /* 墨 ink */
+  --brand-card: #fffdf8;                /* 卡片暖白 */
+  --brand-card-foreground: #1b1a17;
+  --brand-popover: #fffdf8;
+  --brand-popover-foreground: #1b1a17;
+
+  /* —— 主色（唯一品牌强调） —— */
+  --brand-primary: #13524a;             /* 深 petrol / teal */
+  --brand-primary-foreground: #f5f3ee;
+
+  /* —— 次级表面 —— */
+  --brand-muted: #ece7dc;               /* 暖中性 muted */
+  --brand-muted-foreground: #6f6a5e;     /* 次级文字 */
+
+  /* —— 边界 / 输入 / 聚焦 —— */
+  --brand-border: #e0dacd;              /* 发丝级分隔 */
+  --brand-input: #e0dacd;
+  --brand-ring: #13524a;
+
+  /* —— 圆角刻度（瑞士克制） —— */
+  --brand-radius-sm: 4px;
+  --brand-radius-md: 8px;
+  --brand-radius-lg: 12px;
+
+  /* —— 状态色（仅真实状态/延误） —— */
+  --state-success: #2f7a4d;
+  --state-warning: #a9700f;
+  --state-error: #ad3a2d;
+
+  /* —— 阶段轨道派生色（中性 + 主色阶） —— */
+  --track-rail: #d9d3c5;                /* 未达段导轨 */
+  --track-done: #3a7d73;                /* 已完成段 */
+  --track-active: #13524a;              /* 当前段 */
+  --track-future: #c2bcaf;              /* 占位 */
+
+  /* —— 字体栈（无衬线 / 系统优先，无外部加载） —— */
+  --brand-font-sans: "Inter", "SF Pro Text", "Segoe UI", system-ui, -apple-system,
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --brand-font-mono: "SF Mono", "JetBrains Mono", "Consolas", "Menlo", monospace;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-background: var(--brand-background);
+    --color-foreground: var(--brand-foreground);
+    --color-card: var(--brand-card);
+    --color-card-foreground: var(--brand-card-foreground);
+    --color-popover: var(--brand-popover);
+    --color-popover-foreground: var(--brand-popover-foreground);
+    --color-primary: var(--brand-primary);
+    --color-primary-foreground: var(--brand-primary-foreground);
+    --color-muted: var(--brand-muted);
+    --color-muted-foreground: var(--brand-muted-foreground);
+    --color-border: var(--brand-border);
+    --color-input: var(--brand-input);
+    --color-ring: var(--brand-ring);
+    --radius-sm: var(--brand-radius-sm);
+    --radius-md: var(--brand-radius-md);
+    --radius-lg: var(--brand-radius-lg);
+  }
+  @layer base {
+    body { background: var(--brand-background); color: var(--brand-foreground); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style id="semantic-token-fallback">
+      .bg-background { background-color: var(--brand-background); }
+      .text-background { color: var(--brand-background); }
+      .border-background { border-color: var(--brand-background); }
+      .ring-background { --tw-ring-color: var(--brand-background); }
+      .bg-foreground { background-color: var(--brand-foreground); }
+      .text-foreground { color: var(--brand-foreground); }
+      .border-foreground { border-color: var(--brand-foreground); }
+      .ring-foreground { --tw-ring-color: var(--brand-foreground); }
+      .bg-card { background-color: var(--brand-card); }
+      .text-card { color: var(--brand-card); }
+      .border-card { border-color: var(--brand-card); }
+      .ring-card { --tw-ring-color: var(--brand-card); }
+      .bg-card-foreground { background-color: var(--brand-card-foreground); }
+      .text-card-foreground { color: var(--brand-card-foreground); }
+      .border-card-foreground { border-color: var(--brand-card-foreground); }
+      .ring-card-foreground { --tw-ring-color: var(--brand-card-foreground); }
+      .bg-popover { background-color: var(--brand-popover); }
+      .text-popover { color: var(--brand-popover); }
+      .border-popover { border-color: var(--brand-popover); }
+      .ring-popover { --tw-ring-color: var(--brand-popover); }
+      .bg-popover-foreground { background-color: var(--brand-popover-foreground); }
+      .text-popover-foreground { color: var(--brand-popover-foreground); }
+      .border-popover-foreground { border-color: var(--brand-popover-foreground); }
+      .ring-popover-foreground { --tw-ring-color: var(--brand-popover-foreground); }
+      .bg-primary { background-color: var(--brand-primary); }
+      .text-primary { color: var(--brand-primary); }
+      .border-primary { border-color: var(--brand-primary); }
+      .ring-primary { --tw-ring-color: var(--brand-primary); }
+      .bg-primary-foreground { background-color: var(--brand-primary-foreground); }
+      .text-primary-foreground { color: var(--brand-primary-foreground); }
+      .border-primary-foreground { border-color: var(--brand-primary-foreground); }
+      .ring-primary-foreground { --tw-ring-color: var(--brand-primary-foreground); }
+      .bg-muted { background-color: var(--brand-muted); }
+      .text-muted { color: var(--brand-muted); }
+      .border-muted { border-color: var(--brand-muted); }
+      .ring-muted { --tw-ring-color: var(--brand-muted); }
+      .bg-muted-foreground { background-color: var(--brand-muted-foreground); }
+      .text-muted-foreground { color: var(--brand-muted-foreground); }
+      .border-muted-foreground { border-color: var(--brand-muted-foreground); }
+      .ring-muted-foreground { --tw-ring-color: var(--brand-muted-foreground); }
+      .bg-border { background-color: var(--brand-border); }
+      .text-border { color: var(--brand-border); }
+      .border-border { border-color: var(--brand-border); }
+      .ring-border { --tw-ring-color: var(--brand-border); }
+      .bg-input { background-color: var(--brand-input); }
+      .text-input { color: var(--brand-input); }
+      .border-input { border-color: var(--brand-input); }
+      .ring-input { --tw-ring-color: var(--brand-input); }
+      .bg-ring { background-color: var(--brand-ring); }
+      .text-ring { color: var(--brand-ring); }
+      .border-ring { border-color: var(--brand-ring); }
+      .ring-ring { --tw-ring-color: var(--brand-ring); }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body class="h-screen overflow-hidden font-sans antialiased">
+    <main data-viewport-mode="app-shell" class="opb-app">
+    <style id="critical-layout">
+      /* —— 静态基线（不依赖 Tailwind 运行时即可成形） —— */
+      *, *::before, *::after { box-sizing: border-box; }
+      body { margin: 0; font-family: var(--brand-font-sans); font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; }
+      .tnum { font-variant-numeric: tabular-nums; }
+      .opb-mono { font-family: var(--brand-font-mono); }
+
+      /* —— App-shell 固定滚动壳 —— */
+      .opb-app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; }
+      .opb-scroll { flex: 1 1 0%; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+      /* —— Shell header 几何 —— */
+      .opb-header {
+        flex: none; position: relative; z-index: 20;
+        background: color-mix(in srgb, var(--brand-card) 95%, transparent);
+        backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        border-bottom: 1px solid var(--brand-border);
+      }
+      .opb-shell { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+      @media (min-width: 768px) { .opb-shell { padding: 0 32px; } }
+      .opb-search { width: 200px; }
+      @media (min-width: 768px) { .opb-search { width: 280px; } }
+
+      /* —— 控件基线 —— */
+      .opb-input, .opb-select {
+        height: 36px; border: 1px solid var(--brand-border); border-radius: 6px;
+        background: var(--brand-card); color: var(--brand-foreground);
+        font-size: 13px; line-height: 1; font-family: inherit;
+        transition: border-color 140ms ease, box-shadow 140ms ease;
+      }
+      .opb-input { padding: 0 12px 0 36px; }
+      .opb-select { padding: 0 32px 0 12px; appearance: none; -webkit-appearance: none; cursor: pointer; }
+      .opb-input::placeholder { color: var(--brand-muted-foreground); }
+      .opb-input:focus, .opb-select:focus {
+        outline: none; border-color: var(--brand-primary);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-primary) 22%, transparent);
+      }
+      .opb-btn {
+        height: 36px; padding: 0 14px; border: 1px solid var(--brand-border); border-radius: 6px;
+        background: var(--brand-card); color: var(--brand-foreground); font-size: 13px;
+        font-family: inherit; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+        transition: background-color 140ms ease, border-color 140ms ease;
+      }
+      .opb-btn:hover { background: var(--brand-muted); }
+
+      /* —— segmented control —— */
+      .opb-seg { display: inline-flex; height: 36px; border: 1px solid var(--brand-border); border-radius: 6px; overflow: hidden; background: var(--brand-card); }
+      .opb-seg button {
+        height: 100%; padding: 0 14px; background: transparent; border: none; border-bottom: 2px solid transparent;
+        font-size: 13px; font-family: inherit; color: var(--brand-muted-foreground); cursor: pointer;
+        transition: background-color 140ms ease, color 140ms ease;
+      }
+      .opb-seg button + button { border-left: 1px solid var(--brand-border); }
+      .opb-seg button:hover { color: var(--brand-foreground); }
+      .opb-seg button[aria-pressed="true"] { color: var(--brand-primary); border-bottom-color: var(--brand-primary); }
+
+      /* —— 订单表 —— */
+      .opb-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .opb-table {
+        table-layout: fixed; width: 100%; min-width: 1024px; border-collapse: separate; border-spacing: 0;
+        background: var(--brand-card); border: 1px solid var(--brand-border);
+        border-radius: var(--brand-radius-md); overflow: hidden;
+      }
+      .opb-table thead th {
+        background: color-mix(in srgb, var(--brand-muted) 40%, transparent);
+        color: var(--brand-muted-foreground); font-size: 11px; font-weight: 500;
+        text-transform: uppercase; letter-spacing: 0.06em; text-align: left;
+        padding: 10px 12px; border-bottom: 1px solid var(--brand-border); vertical-align: middle;
+      }
+      .opb-table tbody td { padding: 14px 12px; border-bottom: 1px solid var(--brand-border); vertical-align: middle; font-size: 13px; color: var(--brand-foreground); }
+      .opb-table tbody tr:last-child td { border-bottom: none; }
+      .opb-table tbody tr { transition: background-color 140ms ease; }
+      .opb-table tbody tr:hover { background: color-mix(in srgb, var(--brand-primary) 4%, transparent); }
+
+      /* —— 阶段轨道（核心视觉签名） —— */
+      .stage-track { display: flex; align-items: center; gap: 0; width: 100%; padding: 0 4px; box-sizing: border-box; }
+      .tn { width: 10px; height: 10px; border-radius: 999px; flex: none; background: var(--track-rail); }
+      .tn.done { background: var(--track-done); }
+      .tn.active {
+        width: 14px; height: 14px; background: var(--track-active);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--track-active) 20%, transparent);
+        animation: opb-pulse 2.4s ease-in-out infinite;
+      }
+      .ts { flex: 1; height: 2px; background: var(--track-rail); }
+      .ts.done { background: var(--track-done); }
+      @keyframes opb-pulse {
+        0%, 100% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--track-active) 20%, transparent); }
+        50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--track-active) 10%, transparent); }
+      }
+      @media (prefers-reduced-motion: reduce) { .tn.active { animation: none; } }
+
+      /* —— 表头标签行（与轨道同构对齐） —— */
+      .stage-labels { display: flex; align-items: center; gap: 0; width: 100%; padding: 0 4px; box-sizing: border-box; }
+      .stage-labels .lbl { flex: none; width: 10px; text-align: center; white-space: nowrap; overflow: visible; font-size: 10px; line-height: 1; color: var(--brand-muted-foreground); }
+      .stage-labels .sp { flex: 1; height: 2px; background: transparent; }
+
+      /* —— 类型 tag —— */
+      .opb-tag { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; line-height: 1; white-space: nowrap; }
+      .opb-tag-trial { background: var(--brand-muted); color: var(--brand-muted-foreground); }
+      .opb-tag-mass { border: 1px solid var(--brand-primary); color: var(--brand-primary); background: transparent; }
+
+      /* —— 状态 —— */
+      .opb-status { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+      .opb-status .dot { width: 6px; height: 6px; border-radius: 999px; flex: none; }
+      .opb-status-ok { color: var(--brand-muted-foreground); }
+      .opb-status-late { color: var(--state-error); }
+      .opb-status-late .dot { background: var(--state-error); }
+
+      /* —— overview strip —— */
+      .opb-overview { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .opb-overview > div { padding: 18px 20px; }
+      .opb-overview > div + div { border-left: 1px solid var(--brand-border); }
+      .opb-stat-num { font-size: 32px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+      .opb-stat-label { font-size: 12px; color: var(--brand-muted-foreground); margin-top: 6px; }
+
+      /* —— legend —— */
+      .opb-legend-dot { width: 10px; height: 10px; border-radius: 999px; flex: none; }
+
+      /* —— 响应式微调 —— */
+      @media (max-width: 640px) {
+        .opb-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .opb-overview > div:nth-child(3) { border-left: none; border-top: 1px solid var(--brand-border); }
+        .opb-overview > div:nth-child(4) { border-top: 1px solid var(--brand-border); }
+      }
+    </style>
+
+    <!-- ===== 1. Shell header ===== -->
+    <header class="opb-header">
+      <div class="opb-shell flex items-center justify-between" style="padding-top:12px;padding-bottom:12px">
+        <div class="flex items-center gap-3 min-w-0">
+          <span aria-hidden="true" style="display:block;width:10px;height:10px;background:var(--brand-primary);flex:none"></span>
+          <div class="min-w-0">
+            <h1 class="text-foreground truncate" style="font-size:18px;font-weight:600;line-height:1.2">订单进度台</h1>
+            <p class="text-muted-foreground" style="font-size:12px;line-height:1.3;margin-top:2px">中试 · 量产 订单进度</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="relative opb-search">
+            <i data-lucide="search" class="w-4 h-4 absolute text-muted-foreground" style="left:12px;top:50%;transform:translateY(-50%)"></i>
+            <input type="text" class="opb-input w-full" placeholder="按客户 / 订单号搜索" aria-label="搜索">
+          </div>
+          <div class="opb-sync hidden md:flex items-center gap-1.5 text-muted-foreground tnum" style="font-size:12px">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span>已同步 · 08-03 09:12</span>
+          </div>
+          <button class="opb-btn" type="button">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span>导出</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== Content ===== -->
+    <div data-scroll-region="primary" class="opb-scroll overflow-y-auto">
+    <div class="opb-shell" style="padding-top:24px;padding-bottom:32px">
+      <div style="display:flex;flex-direction:column;gap:20px">
+
+        <!-- 2. Overview strip -->
+        <section id="overview-strip" class="opb-overview bg-card border border-border rounded-md">
+          <div>
+            <div class="opb-stat-num text-foreground">4</div>
+            <div class="opb-stat-label">中试进行中</div>
+          </div>
+          <div>
+            <div class="opb-stat-num text-foreground">5</div>
+            <div class="opb-stat-label">量产进行中</div>
+          </div>
+          <div>
+            <div class="opb-stat-num text-foreground">3</div>
+            <div class="opb-stat-label">待发货</div>
+          </div>
+          <div>
+            <div class="opb-stat-num" style="color:var(--state-error)">2</div>
+            <div class="opb-stat-label">延误</div>
+          </div>
+        </section>
+
+        <!-- 3. Filter bar -->
+        <section id="filter-bar" class="flex flex-wrap items-center" style="gap:12px">
+          <div class="relative">
+            <select class="opb-select" aria-label="客户">
+              <option>全部客户</option>
+              <option>远东新能源</option>
+              <option>蓝石精工</option>
+              <option>海创医疗</option>
+              <option>中悦电子</option>
+            </select>
+            <i data-lucide="chevron-down" class="w-4 h-4 absolute text-muted-foreground pointer-events-none" style="right:10px;top:50%;transform:translateY(-50%)"></i>
+          </div>
+          <div class="opb-seg" role="group" aria-label="类型">
+            <button type="button" aria-pressed="true">全部</button>
+            <button type="button" aria-pressed="false">中试</button>
+            <button type="button" aria-pressed="false">量产</button>
+          </div>
+          <div class="relative">
+            <select class="opb-select" aria-label="阶段">
+              <option>全部阶段</option>
+              <option>已接单</option>
+              <option>生产中</option>
+              <option>已入库</option>
+              <option>已发货</option>
+              <option>已签收</option>
+            </select>
+            <i data-lucide="chevron-down" class="w-4 h-4 absolute text-muted-foreground pointer-events-none" style="right:10px;top:50%;transform:translateY(-50%)"></i>
+          </div>
+          <div class="ml-auto flex items-center gap-1.5 text-muted-foreground tnum" style="font-size:12px">
+            <i data-lucide="filter" class="w-3.5 h-3.5"></i>
+            <span>共 10 单</span>
+          </div>
+        </section>
+
+        <!-- 4. Order track table (HERO) -->
+        <section id="order-track-table">
+          <div class="opb-table-wrap">
+            <table class="opb-table" aria-label="订单进度轨道表">
+              <colgroup>
+                <col style="width:140px">
+                <col style="width:150px">
+                <col style="width:88px">
+                <col>
+                <col style="width:92px">
+                <col style="width:108px">
+                <col style="width:84px">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>订单号</th>
+                  <th>客户</th>
+                  <th>类型</th>
+                  <th>
+                    <div class="stage-labels">
+                      <span class="lbl">已接单</span><span class="sp"></span>
+                      <span class="lbl">生产中</span><span class="sp"></span>
+                      <span class="lbl">已入库</span><span class="sp"></span>
+                      <span class="lbl">已发货</span><span class="sp"></span>
+                      <span class="lbl">已签收</span>
+                    </div>
+                  </th>
+                  <th>当前阶段</th>
+                  <th>预计交期</th>
+                  <th>状态</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="opb-mono">SO-2026-0817</span></td>
+                  <td>远东新能源</td>
+                  <td><span class="opb-tag opb-tag-mass">量产</span></td>
+                  <td><div class="stage-track"><i class="tn done"></i><i class="ts done"></i><i class="tn active"></i><i class="ts"></i><i class="tn"></i><i class="ts"></i><i class="tn"></i><i class="ts"></i><i class="tn"></i></div></td>
+                  <td><span class="text-primary" style="font-weight:500">生产中</span></td>
+                  <td><span class="tnum">08-19</span></td>
+                  <td><span class="opb-status opb-status-ok">正常</span></td>
+                </tr>
+                <tr>
+                  <td><span class="opb-mono">SY-0832</span></td>
+                  <td>远东新能源</td>
+                  <td><span class="opb-tag opb-tag-trial">中试</span></td>
+                  <td><div class="stage-track"><i class="tn done"></i><i class="ts done"></i><i class="tn done"></i><i class="ts done"></i><i class="tn active"></i><i class="ts"></i><i class="tn"></i><i class="ts"></i><i class="tn"></i></div></td>
+                  <td><span class="text-primary" style="font-weight:500">已入库</span></td>
+                  <td><span class="tnum">08-12</span></td>
+                  <td><span class="opb-status opb-status-ok">正常</span></td>
+                </tr>
+                <tr>
+                  <td><span class="opb-mono">SO-2026-0820</span></td>
+                  <td>远东新能源</td>
+                  <td><span class="opb-tag opb-tag-mass">量产</span></td>
+                  <td><div class="stage-track"><i class="tn active"></i><i class="ts"></i><i class="tn"></i><i class="ts"></i><i class="tn"></i><i class="ts"></i><i class="tn"></i><i class="ts"></i><i class="tn"></i></div></td>
+                  <td><span class="text-primary" style="font-weight:500">已接单</span></td>
+                  <td><span class="tnum">08-26</span></td>
+                  <td><span class="opb-status opb-status-ok">正常</span></td>
+                </tr>
+                <tr>
+                  <td><span class="opb-mono">SO-2026-0805</span></td>
+                  <td>蓝石精工</td>
+                  <td><span class="opb-tag opb-tag-mass">量产</span></td>
+                  <td><div class="stage-track"><i class="tn done"></i><i class="ts done"></i><i class="tn done"></i><i class="ts done"></i><i class="tn done"></i><i class="ts done"></i><i class="tn active"></i><i class="ts"></i><i class="tn"></i></div></td>
+                  <td><span class="text-primary" style="font-weight:500">已发货</span></td>
+                  <td><span class="tnum">08-04</span></td>
+                  <td><span class="opb-status opb-status-ok">正常</span></td>
+                </tr>
+                <tr>
+                  <td><span class="opb-mono">SY-0851</span></td>
+                  <td>蓝石精工</td>
+                  <td><span class="opb-tag opb-tag-trial">中试</span></td>
+                  <td><div class="stage-track"><i class="tn done"></i><i class="ts done"></i><i class="tn active"></i><i class="ts"></i><i class="tn"></i><i class="ts"></i><i class="tn"></i><i class="ts"></i><i class="tn"></i></div></td>
+                  <td><span class="text-primary" style="font-weight:500">生产中</span></td>
+                  <td><span class="tnum">08-10</span></td>
+                  <td><span class="opb-status opb-status-late"><span class="dot"></span>延误</span></td>
+                </tr>
+                <tr>
+                  <td><span class="opb-mono">SO-2026-0799</span></td>
+                  <td>蓝石精工</td>
+                  <td><span class="opb-tag opb-tag-mass">量产</span></td>
+                  <td><div class="stage-track"><i class="tn done"></i><i class="ts done"></i><i class="tn done"></i><i class="ts done"></i><i class="tn done"></i><i class="ts done"></i><i class="tn done"></i><i class="ts done"></i><i class="tn active"></i></div></td>
+                  <td><span class="text-primary" style="font-weight:500">已签收</span></td>
+                  <td><span class="tnum text-muted-foreground">07-30</span></td>
+                  <td><span class="opb-status opb-status-ok">正常</span></td>
+                </tr>
+                <tr>
+                  <td><span class="opb-mono">SY-0860</span></td>
+                  <td>海创医疗</td>
+                  <td><span class="opb-tag opb-tag-trial">中试</span></td>
+                  <td><div class="stage-track"><i class="tn active"></i><i class="ts"></i><i class="tn"></i><i class="ts"></i><i class="tn"></i><i class="ts"></i><i class="tn"></i><i class="ts"></i><i class="tn"></i></div></td>
+                  <td><span class="text-primary" style="font-weight:500">已接单</span></td>
+                  <td><span class="tnum">08-22</span></td>
+                  <td><span class="opb-status opb-status-ok">正常</span></td>
+                </tr>
+                <tr>
+                  <td><span class="opb-mono">SO-2026-0825</span></td>
+                  <td>海创医疗</td>
+                  <td><span class="opb-tag opb-tag-mass">量产</span></td>
+                  <td><div class="stage-track"><i class="tn done"></i><i class="ts done"></i><i class="tn active"></i><i class="ts"></i><i class="tn"></i><i class="ts"></i><i class="tn"></i><i class="ts"></i><i class="tn"></i></div></td>
+                  <td><span class="text-primary" style="font-weight:500">生产中</span></td>
+                  <td><span class="tnum">08-15</span></td>
+                  <td><span class="opb-status opb-status-late"><span class="dot"></span>延误</span></td>
+                </tr>
+                <tr>
+                  <td><span class="opb-mono">SO-2026-0811</span></td>
+                  <td>海创医疗</td>
+                  <td><span class="opb-tag opb-tag-mass">量产</span></td>
+                  <td><div class="stage-track"><i class="tn done"></i><i class="ts done"></i><i class="tn done"></i><i class="ts done"></i><i class="tn active"></i><i class="ts"></i><i class="tn"></i><i class="ts"></i><i class="tn"></i></div></td>
+                  <td><span class="text-primary" style="font-weight:500">已入库</span></td>
+                  <td><span class="tnum">08-09</span></td>
+                  <td><span class="opb-status opb-status-ok">正常</span></td>
+                </tr>
+                <tr>
+                  <td><span class="opb-mono">SY-0870</span></td>
+                  <td>中悦电子</td>
+                  <td><span class="opb-tag opb-tag-trial">中试</span></td>
+                  <td><div class="stage-track"><i class="tn done"></i><i class="ts done"></i><i class="tn done"></i><i class="ts done"></i><i class="tn done"></i><i class="ts done"></i><i class="tn active"></i><i class="ts"></i><i class="tn"></i></div></td>
+                  <td><span class="text-primary" style="font-weight:500">已发货</span></td>
+                  <td><span class="tnum">08-05</span></td>
+                  <td><span class="opb-status opb-status-ok">正常</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 5. Legend footer -->
+        <footer id="legend-footer" class="flex flex-wrap items-center justify-between" style="gap:16px;padding-top:8px">
+          <div class="flex flex-wrap items-center text-muted-foreground" style="gap:20px;font-size:12px">
+            <span class="flex items-center" style="gap:6px"><span class="opb-legend-dot" style="background:var(--track-done)"></span>已完成</span>
+            <span class="flex items-center" style="gap:6px"><span class="opb-legend-dot" style="background:var(--track-active);box-shadow:0 0 0 3px color-mix(in srgb,var(--track-active) 20%,transparent)"></span>当前阶段</span>
+            <span class="flex items-center" style="gap:6px"><span class="opb-legend-dot" style="background:var(--track-rail)"></span>未开始</span>
+            <span class="flex items-center" style="gap:6px"><span class="opb-legend-dot" style="background:var(--state-error)"></span>延误</span>
+          </div>
+          <div class="text-muted-foreground tnum" style="font-size:12px;text-align:right">
+            数据来源：SAP 055（量产）· myexcel（中试）｜定时同步至本地 · 最近同步 08-03 09:12
+          </div>
+        </footer>
+
+      </div>
+    </div>
+    </div>
+    </main>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

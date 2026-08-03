@@ -1,0 +1,95 @@
+{
+  "success": true,
+  "outcome": "passed",
+  "repairable": true,
+  "terminalViolations": [],
+  "terminalBlockingSummary": null,
+  "skillProvenance": {
+    "name": "solo-design",
+    "version": "2026.07.06.8",
+    "version_source": "skill-release-manifest.json",
+    "runtime_skill_dir": null,
+    "recorded_at": null,
+    "expected_version": "2026.07.22.00.00.00",
+    "status": "mismatch",
+    "read_status": "ok"
+  },
+  "operatingMode": "free-explore",
+  "renderBlockingErrorCount": 0,
+  "softWarningCount": 0,
+  "renderBlockingErrors": [],
+  "errorSignatures": [],
+  "softWarnings": [],
+  "repairPlanHints": [],
+  "repairActionTable": [],
+  "errorCount": 0,
+  "warningCount": 0,
+  "errors": [],
+  "warnings": [],
+  "validationRunDisciplineStatus": {
+    "declared": true,
+    "restoreMode": false,
+    "maxFullValidationRuns": 2,
+    "validationHistoryCount": 0,
+    "repairLedgerCount": 0,
+    "softWarningsTriggerRepair": false,
+    "terminalState": null,
+    "nextAction": null,
+    "violations": [],
+    "success": true
+  },
+  "terminalState": null,
+  "nextCheck": {
+    "type": "finish-readiness",
+    "command": "node '/data/user/builtin/design/default/skills/solo-design/shared-runtime/deterministic-tooling/validate-finish-readiness.mjs' '/workspace/order-progress-board' --check=all",
+    "fullValidationAllowed": false,
+    "reason": "workspace validation passed; run complete finish readiness before final delivery"
+  },
+  "repairBatch": [],
+  "repairContextPacket": {
+    "schema_version": "1.0",
+    "purpose": "small-context repair packet; read this before full validation-report.json",
+    "success": true,
+    "terminalState": null,
+    "skillProvenance": {
+      "name": "solo-design",
+      "version": "2026.07.06.8",
+      "version_source": "skill-release-manifest.json",
+      "runtime_skill_dir": null,
+      "recorded_at": null,
+      "expected_version": "2026.07.22.00.00.00",
+      "status": "mismatch",
+      "read_status": "ok"
+    },
+    "renderBlockingErrorCount": 0,
+    "softWarningCount": 0,
+    "renderBlockingErrors": [],
+    "repairActionTable": [],
+    "nextCheck": {
+      "type": "finish-readiness",
+      "command": "node '/data/user/builtin/design/default/skills/solo-design/shared-runtime/deterministic-tooling/validate-finish-readiness.mjs' '/workspace/order-progress-board' --check=all",
+      "fullValidationAllowed": false,
+      "reason": "workspace validation passed; run complete finish readiness before final delivery"
+    },
+    "forbidden": [
+      "do not read validator source",
+      "do not rerun full validation when nextCheck.fullValidationAllowed=false",
+      "do not start preview/browser unless user explicitly asks",
+      "do not hand-edit repair ledger fields"
+    ]
+  },
+  "projectFileHashes": {
+    "order-progress-board.design": "f844ca9db17808ece558aed721ad170db5874281b7a6702f8fc0c47cc54819d5",
+    "colors_and_type.css": "6c03bea6f1a8ca57c81effa702e64c6f0afdf76ab9a6ad93e487d8223ec9b6bf",
+    "runtime-orchestration-summary.json": "299c31c9f310885ee325e375d7927f7ec46eb2439b8c873544150beae487bdd0",
+    "pages/dashboard.html": "b8b4da6720220781947cce0aa4a8dc8c978402b82df2e87e9a5612b13629de58",
+    "pages/detail-mass.html": "49e7ff86dd7f3ff5dd9fc14e49216318b11058ea9918ea207b1f2244b3ec862d",
+    "pages/detail-trial.html": "209b49173426d9d72a24f7ff8dc585f5608599a49b64cdf887c755c357158565",
+    "pages/list-mass.html": "a74a94fbda70a4c7a99e6389e32001fd75eacc579f50b76b31116111585ea685",
+    "pages/list-trial.html": "071e3155a640cdf5e2519f985bbe57e9ac7c59d3af62e815504715e22b7f9280"
+  },
+  "designDir": "/workspace/order-progress-board",
+  "expectedPages": null,
+  "requireInteractions": null,
+  "checkedAt": "2026-08-03T09:49:46.713Z"
+}
