@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>订单进度台 — 中试 & 量产监控</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 顶栏 -->
+    <header class="appbar">
+      <div class="appbar__brand">
+        <span class="appbar__title">订单进度台</span>
+        <span class="appbar__sub">中试 · 量产 监控</span>
+      </div>
+
+      <div id="appbar-tabs" class="module-tabs"></div>
+
+      <div class="appbar__spacer"></div>
+
+      <button id="swap-order" class="chip" title="交换模块顺序">⇄ 顺序</button>
+
+      <label class="appbar__me">
+        <span>当前业务员</span>
+        <select id="appbar-user" class="select"></select>
+      </label>
+      <div class="appbar__me"><span class="who" id="appbar-who">—</span></div>
+    </header>
+
+    <!-- 主体 -->
+    <main class="main">
+      <div id="module"></div>
+    </main>
+  </div>
+
+  <!-- 详情抽屉 -->
+  <div id="overlay" class="overlay"></div>
+  <aside id="drawer" class="drawer">
+    <div id="drawer-head" class="drawer__head"></div>
+    <div id="drawer-body" class="drawer__body"></div>
+  </aside>
+
+  <script>
+    // 注入业务员选项（在 app.js 之前，避免渲染时 select 为空）
+    const OWNERS_KEYS = ['张明 (ZM)', '李芳 (LF)'];
+    document.getElementById('appbar-user').innerHTML = OWNERS_KEYS
+      .map(k => `<option value="${k}">${k}</option>`).join('');
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>
