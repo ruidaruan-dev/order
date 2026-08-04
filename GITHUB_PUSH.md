@@ -1,28 +1,22 @@
-# 推送到 GitHub 说明
+# GitHub 推送状态
 
-## 当前状态
+## 状态
 
-- 本地 Git 仓库已初始化
-- 所有产物已提交（commit: `cad8774`）
-- 分支: `master`
+- 已推送到 `https://github.com/ruidaruan-dev/order.git`
+- 分支：`master`
+- Commit：`3a4f7e7`
 
-## 需要你提供
+## 代码中可调用的 raw URL
 
-1. GitHub 仓库 URL，例如：
-   - `https://github.com/yourname/order-progress-board.git`
-2. Personal Access Token（classic），需勾选 `repo` 权限
-
-## 推送后代码中可调用的 raw URL 示例
-
-假设仓库为 `https://github.com/yourname/order-progress-board`，默认分支为 `main` 或 `master`：
-
-```
-https://raw.githubusercontent.com/yourname/order-progress-board/main/colors_and_type.css
-https://raw.githubusercontent.com/yourname/order-progress-board/main/pages/list-trial.html
-https://raw.githubusercontent.com/yourname/order-progress-board/main/pages/list-mass.html
-https://raw.githubusercontent.com/yourname/order-progress-board/main/pages/detail-trial.html
-https://raw.githubusercontent.com/yourname/order-progress-board/main/pages/detail-mass.html
-https://raw.githubusercontent.com/yourname/order-progress-board/main/handoff.md
+```text
+https://raw.githubusercontent.com/ruidaruan-dev/order/master/colors_and_type.css
+https://raw.githubusercontent.com/ruidaruan-dev/order/master/handoff.md
+https://raw.githubusercontent.com/ruidaruan-dev/order/master/order-progress-board.design
+https://raw.githubusercontent.com/ruidaruan-dev/order/master/pages/dashboard.html
+https://raw.githubusercontent.com/ruidaruan-dev/order/master/pages/list-mass.html
+https://raw.githubusercontent.com/ruidaruan-dev/order/master/pages/list-trial.html
+https://raw.githubusercontent.com/ruidaruan-dev/order/master/pages/detail-mass.html
+https://raw.githubusercontent.com/ruidaruan-dev/order/master/pages/detail-trial.html
 ```
 
 ## 目录结构
@@ -38,5 +32,7 @@ order-progress-board/
 │   ├── list-mass.html
 │   ├── detail-trial.html
 │   └── detail-mass.html
-└── runtime-orchestration-summary.json
+├── runtime-orchestration-summary.json
+├── runtime-dispatch-manifest.json
+└── validation-report.json
 ```
