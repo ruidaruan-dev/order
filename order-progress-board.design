@@ -1,0 +1,200 @@
+{
+  "data": [
+    {
+      "id": "page-dashboard",
+      "title": "订单进度台 v1（旧版参考）",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1785744980000,
+      "canvasData": {
+        "x": 0,
+        "y": 891,
+        "group": 0,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 900,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-4e444d10",
+          "measuredAt": 1785751053124
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/dashboard.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-list-mass",
+      "title": "量产交付监控",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1785749075000,
+      "canvasData": {
+        "x": 620,
+        "y": 0,
+        "group": 1,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 900,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-03b829b3",
+          "measuredAt": 1785751053124
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/list-mass.html",
+        "interactions": [
+          {
+            "domId": "nav-trial",
+            "targetPageId": "page-list-trial"
+          },
+          {
+            "domId": "row-mass-SO20260817",
+            "targetPageId": "page-detail-mass"
+          },
+          {
+            "domId": "row-mass-SO20260820",
+            "targetPageId": "page-detail-mass"
+          },
+          {
+            "domId": "row-mass-SO20260805",
+            "targetPageId": "page-detail-mass"
+          },
+          {
+            "domId": "row-mass-SO20260799",
+            "targetPageId": "page-detail-mass"
+          },
+          {
+            "domId": "row-mass-SO20260825",
+            "targetPageId": "page-detail-mass"
+          },
+          {
+            "domId": "row-mass-SO20260811",
+            "targetPageId": "page-detail-mass"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-list-trial",
+      "title": "试制进度监控",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1785749075001,
+      "canvasData": {
+        "x": 620,
+        "y": 377,
+        "group": 1,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 900,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-0fe01b85",
+          "measuredAt": 1785751053124
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/list-trial.html",
+        "interactions": [
+          {
+            "domId": "nav-mass",
+            "targetPageId": "page-list-mass"
+          },
+          {
+            "domId": "row-trial-EX20260604796",
+            "targetPageId": "page-detail-trial"
+          },
+          {
+            "domId": "row-trial-12482359",
+            "targetPageId": "page-detail-trial"
+          },
+          {
+            "domId": "row-trial-12482360",
+            "targetPageId": "page-detail-trial"
+          },
+          {
+            "domId": "row-trial-12482361",
+            "targetPageId": "page-detail-trial"
+          },
+          {
+            "domId": "row-trial-12482362",
+            "targetPageId": "page-detail-trial"
+          },
+          {
+            "domId": "row-trial-12482363",
+            "targetPageId": "page-detail-trial"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-detail-mass",
+      "title": "量产订单详情",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1785749075002,
+      "canvasData": {
+        "x": 0,
+        "y": 514,
+        "group": 1,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 900,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-1f982042",
+          "measuredAt": 1785751053124
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/detail-mass.html",
+        "interactions": [
+          {
+            "domId": "nav-trial",
+            "targetPageId": "page-list-trial"
+          },
+          {
+            "domId": "back-to-list",
+            "targetPageId": "page-list-mass"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-detail-trial",
+      "title": "试制订单详情",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1785749075003,
+      "canvasData": {
+        "x": 0,
+        "y": 0,
+        "group": 1,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1373,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-95bb187e",
+          "measuredAt": 1785751053124
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/detail-trial.html",
+        "interactions": [
+          {
+            "domId": "nav-mass",
+            "targetPageId": "page-list-mass"
+          },
+          {
+            "domId": "back-to-list",
+            "targetPageId": "page-list-trial"
+          }
+        ]
+      }
+    }
+  ],
+  "config": {
+    "autoLayout": true,
+    "deviceType": "desktop",
+    "projectName": "订单进度台"
+  }
+}

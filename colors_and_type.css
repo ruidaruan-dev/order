@@ -1,0 +1,49 @@
+/* ============================================================
+   订单进度台 — 品牌令牌
+   方向 A+D：阶段轨道结构骨架 + 瑞士极简执行美学
+   暖纸底 / 深 petrol 主色 / 发丝级分隔 / 单一强调
+   ============================================================ */
+
+:root {
+  /* —— 表面与文字 —— */
+  --brand-background: #f5f3ee;          /* 暖纸 paper */
+  --brand-foreground: #1b1a17;          /* 墨 ink */
+  --brand-card: #fffdf8;                /* 卡片暖白 */
+  --brand-card-foreground: #1b1a17;
+  --brand-popover: #fffdf8;
+  --brand-popover-foreground: #1b1a17;
+
+  /* —— 主色（唯一品牌强调） —— */
+  --brand-primary: #13524a;             /* 深 petrol / teal */
+  --brand-primary-foreground: #f5f3ee;
+
+  /* —— 次级表面 —— */
+  --brand-muted: #ece7dc;               /* 暖中性 muted */
+  --brand-muted-foreground: #6f6a5e;     /* 次级文字 */
+
+  /* —— 边界 / 输入 / 聚焦 —— */
+  --brand-border: #e0dacd;              /* 发丝级分隔 */
+  --brand-input: #e0dacd;
+  --brand-ring: #13524a;
+
+  /* —— 圆角刻度（瑞士克制） —— */
+  --brand-radius-sm: 4px;
+  --brand-radius-md: 8px;
+  --brand-radius-lg: 12px;
+
+  /* —— 状态色（仅真实状态/延误） —— */
+  --state-success: #2f7a4d;
+  --state-warning: #a9700f;
+  --state-error: #ad3a2d;
+
+  /* —— 阶段轨道派生色（中性 + 主色阶） —— */
+  --track-rail: #d9d3c5;                /* 未达段导轨 */
+  --track-done: #3a7d73;                /* 已完成段 */
+  --track-active: #13524a;              /* 当前段 */
+  --track-future: #c2bcaf;              /* 占位 */
+
+  /* —— 字体栈（无衬线 / 系统优先，无外部加载） —— */
+  --brand-font-sans: "Inter", "SF Pro Text", "Segoe UI", system-ui, -apple-system,
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --brand-font-mono: "SF Mono", "JetBrains Mono", "Consolas", "Menlo", monospace;
+}

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>试制订单详情</title>
+    <style id="theme-vars">
+/* ============================================================
+   订单进度台 — 品牌令牌
+   方向 A+D：阶段轨道结构骨架 + 瑞士极简执行美学
+   暖纸底 / 深 petrol 主色 / 发丝级分隔 / 单一强调
+   ============================================================ */
+
+:root {
+  /* —— 表面与文字 —— */
+  --brand-background: #f5f3ee;          /* 暖纸 paper */
+  --brand-foreground: #1b1a17;          /* 墨 ink */
+  --brand-card: #fffdf8;                /* 卡片暖白 */
+  --brand-card-foreground: #1b1a17;
+  --brand-popover: #fffdf8;
+  --brand-popover-foreground: #1b1a17;
+
+  /* —— 主色（唯一品牌强调） —— */
+  --brand-primary: #13524a;             /* 深 petrol / teal */
+  --brand-primary-foreground: #f5f3ee;
+
+  /* —— 次级表面 —— */
+  --brand-muted: #ece7dc;               /* 暖中性 muted */
+  --brand-muted-foreground: #6f6a5e;     /* 次级文字 */
+
+  /* —— 边界 / 输入 / 聚焦 —— */
+  --brand-border: #e0dacd;              /* 发丝级分隔 */
+  --brand-input: #e0dacd;
+  --brand-ring: #13524a;
+
+  /* —— 圆角刻度（瑞士克制） —— */
+  --brand-radius-sm: 4px;
+  --brand-radius-md: 8px;
+  --brand-radius-lg: 12px;
+
+  /* —— 状态色（仅真实状态/延误） —— */
+  --state-success: #2f7a4d;
+  --state-warning: #a9700f;
+  --state-error: #ad3a2d;
+
+  /* —— 阶段轨道派生色（中性 + 主色阶） —— */
+  --track-rail: #d9d3c5;                /* 未达段导轨 */
+  --track-done: #3a7d73;                /* 已完成段 */
+  --track-active: #13524a;              /* 当前段 */
+  --track-future: #c2bcaf;              /* 占位 */
+
+  /* —— 字体栈（无衬线 / 系统优先，无外部加载） —— */
+  --brand-font-sans: "Inter", "SF Pro Text", "Segoe UI", system-ui, -apple-system,
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --brand-font-mono: "SF Mono", "JetBrains Mono", "Consolas", "Menlo", monospace;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-background: var(--brand-background);
+    --color-foreground: var(--brand-foreground);
+    --color-card: var(--brand-card);
+    --color-card-foreground: var(--brand-card-foreground);
+    --color-popover: var(--brand-popover);
+    --color-popover-foreground: var(--brand-popover-foreground);
+    --color-primary: var(--brand-primary);
+    --color-primary-foreground: var(--brand-primary-foreground);
+    --color-muted: var(--brand-muted);
+    --color-muted-foreground: var(--brand-muted-foreground);
+    --color-border: var(--brand-border);
+    --color-input: var(--brand-input);
+    --color-ring: var(--brand-ring);
+    --radius-sm: var(--brand-radius-sm);
+    --radius-md: var(--brand-radius-md);
+    --radius-lg: var(--brand-radius-lg);
+  }
+  @layer base {
+    body { background: var(--brand-background); color: var(--brand-foreground); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style id="semantic-token-fallback">
+      .bg-background { background-color: var(--brand-background); }
+      .text-background { color: var(--brand-background); }
+      .border-background { border-color: var(--brand-background); }
+      .ring-background { --tw-ring-color: var(--brand-background); }
+      .bg-foreground { background-color: var(--brand-foreground); }
+      .text-foreground { color: var(--brand-foreground); }
+      .border-foreground { border-color: var(--brand-foreground); }
+      .ring-foreground { --tw-ring-color: var(--brand-foreground); }
+      .bg-card { background-color: var(--brand-card); }
+      .text-card { color: var(--brand-card); }
+      .border-card { border-color: var(--brand-card); }
+      .ring-card { --tw-ring-color: var(--brand-card); }
+      .bg-card-foreground { background-color: var(--brand-card-foreground); }
+      .text-card-foreground { color: var(--brand-card-foreground); }
+      .border-card-foreground { border-color: var(--brand-card-foreground); }
+      .ring-card-foreground { --tw-ring-color: var(--brand-card-foreground); }
+      .bg-popover { background-color: var(--brand-popover); }
+      .text-popover { color: var(--brand-popover); }
+      .border-popover { border-color: var(--brand-popover); }
+      .ring-popover { --tw-ring-color: var(--brand-popover); }
+      .bg-popover-foreground { background-color: var(--brand-popover-foreground); }
+      .text-popover-foreground { color: var(--brand-popover-foreground); }
+      .border-popover-foreground { border-color: var(--brand-popover-foreground); }
+      .ring-popover-foreground { --tw-ring-color: var(--brand-popover-foreground); }
+      .bg-primary { background-color: var(--brand-primary); }
+      .text-primary { color: var(--brand-primary); }
+      .border-primary { border-color: var(--brand-primary); }
+      .ring-primary { --tw-ring-color: var(--brand-primary); }
+      .bg-primary-foreground { background-color: var(--brand-primary-foreground); }
+      .text-primary-foreground { color: var(--brand-primary-foreground); }
+      .border-primary-foreground { border-color: var(--brand-primary-foreground); }
+      .ring-primary-foreground { --tw-ring-color: var(--brand-primary-foreground); }
+      .bg-muted { background-color: var(--brand-muted); }
+      .text-muted { color: var(--brand-muted); }
+      .border-muted { border-color: var(--brand-muted); }
+      .ring-muted { --tw-ring-color: var(--brand-muted); }
+      .bg-muted-foreground { background-color: var(--brand-muted-foreground); }
+      .text-muted-foreground { color: var(--brand-muted-foreground); }
+      .border-muted-foreground { border-color: var(--brand-muted-foreground); }
+      .ring-muted-foreground { --tw-ring-color: var(--brand-muted-foreground); }
+      .bg-border { background-color: var(--brand-border); }
+      .text-border { color: var(--brand-border); }
+      .border-border { border-color: var(--brand-border); }
+      .ring-border { --tw-ring-color: var(--brand-border); }
+      .bg-input { background-color: var(--brand-input); }
+      .text-input { color: var(--brand-input); }
+      .border-input { border-color: var(--brand-input); }
+      .ring-input { --tw-ring-color: var(--brand-input); }
+      .bg-ring { background-color: var(--brand-ring); }
+      .text-ring { color: var(--brand-ring); }
+      .border-ring { border-color: var(--brand-ring); }
+      .ring-ring { --tw-ring-color: var(--brand-ring); }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body class="h-screen overflow-hidden font-sans antialiased">
+  <main data-viewport-mode="app-shell" class="opb-app">
+    <style id="critical-layout">
+      *, *::before, *::after { box-sizing: border-box; }
+      body { margin: 0; font-family: var(--brand-font-sans); font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; }
+      .tnum { font-variant-numeric: tabular-nums; }
+      .opb-mono { font-family: var(--brand-font-mono); }
+      .opb-app { display:flex; flex-direction:column; height:100vh; height:100dvh; overflow:hidden; }
+      .opb-top-header { flex:none; height:56px; background: color-mix(in srgb, var(--brand-card) 95%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom:1px solid var(--brand-border); }
+      .opb-header-inner { height:100%; display:flex; align-items:center; justify-content:space-between; padding:0 24px; }
+      .opb-body { flex:1 1 0%; min-height:0; display:flex; }
+      .opb-sidebar { flex:none; width:180px; border-right:1px solid var(--brand-border); background:var(--brand-card); padding:16px 12px; }
+      .opb-nav { display:flex; flex-direction:column; gap:4px; }
+      .opb-nav-item { display:flex; align-items:center; gap:8px; height:40px; padding:0 12px; border-radius:6px; font-size:14px; color:var(--brand-muted-foreground); text-decoration:none; transition: background-color 140ms ease, color 140ms ease; }
+      .opb-nav-item:hover { background:var(--brand-muted); color:var(--brand-foreground); }
+      .opb-nav-item.active { background:var(--brand-primary); color:var(--brand-primary-foreground); }
+      .opb-nav-item i { width:18px; height:18px; }
+      .opb-scroll { flex:1 1 0%; min-height:0; overflow-y:auto; -webkit-overflow-scrolling: touch; }
+      .opb-content { padding:24px 32px 32px; }
+      .opb-input, .opb-select { height:36px; border:1px solid var(--brand-border); border-radius:6px; background:var(--brand-card); color:var(--brand-foreground); font-size:13px; font-family:inherit; transition:border-color 140ms ease, box-shadow 140ms ease; }
+      .opb-input { padding:0 12px 0 36px; }
+      .opb-btn { height:36px; padding:0 14px; border:1px solid var(--brand-border); border-radius:6px; background:var(--brand-card); color:var(--brand-foreground); font-size:13px; font-family:inherit; display:inline-flex; align-items:center; gap:6px; cursor:pointer; transition:background-color 140ms ease, border-color 140ms ease; text-decoration:none; }
+      .opb-btn:hover { background:var(--brand-muted); }
+      .opb-btn-text { height:auto; padding:4px 8px; border:none; background:transparent; color:var(--brand-muted-foreground); }
+      .opb-btn-text:hover { background: color-mix(in srgb, var(--brand-muted) 50%, transparent); color:var(--brand-foreground); }
+
+      /* detail header */
+      .opb-detail-header { display:flex; flex-direction:column; gap:12px; margin-bottom:24px; }
+      .opb-back { display:inline-flex; align-items:center; gap:6px; font-size:13px; color:var(--brand-muted-foreground); text-decoration:none; transition:color 140ms ease; }
+      .opb-back:hover { color:var(--brand-primary); }
+      .opb-detail-title { font-size:24px; font-weight:600; line-height:1.2; color:var(--brand-foreground); }
+      .opb-detail-subtitle { font-size:14px; color:var(--brand-muted-foreground); }
+      .opb-badge { display:inline-flex; align-items:center; gap:6px; height:26px; padding:0 10px; border-radius:6px; font-size:12px; line-height:1; white-space:nowrap; }
+      .opb-badge-error { background: color-mix(in srgb, var(--state-error) 12%, transparent); color:var(--state-error); border:1px solid color-mix(in srgb, var(--state-error) 30%, transparent); }
+      .opb-badge-error::before { content:""; width:6px; height:6px; border-radius:999px; background:var(--state-error); }
+
+      /* vertical timeline */
+      .opb-timeline { position:relative; list-style:none; margin:0; padding:0; }
+      .opb-timeline::before { content:""; position:absolute; left:11px; top:8px; bottom:8px; width:2px; background:var(--brand-border); }
+      .opb-timeline-item { position:relative; padding-left:34px; padding-bottom:22px; }
+      .opb-timeline-item:last-child { padding-bottom:0; }
+      .opb-timeline-marker { position:absolute; left:0; top:2px; width:24px; height:24px; border-radius:999px; display:flex; align-items:center; justify-content:center; border:2px solid transparent; background:var(--brand-card); }
+      .opb-timeline-marker::after { content:""; width:10px; height:10px; border-radius:999px; }
+      .opb-timeline-item.track-done .opb-timeline-marker { border-color:var(--track-done); }
+      .opb-timeline-item.track-done .opb-timeline-marker::after { background:var(--track-done); }
+      .opb-timeline-item.track-rail .opb-timeline-marker { border-color:var(--track-rail); }
+      .opb-timeline-item.track-rail .opb-timeline-marker::after { background:var(--track-rail); }
+      .opb-timeline-item.track-error .opb-timeline-marker { border-color:var(--state-error); }
+      .opb-timeline-item.track-error .opb-timeline-marker::after { background:var(--state-error); }
+      .opb-timeline-content { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+      .opb-timeline-name { font-size:14px; font-weight:500; color:var(--brand-foreground); }
+      .opb-timeline-date { font-size:12px; color:var(--brand-muted-foreground); font-family:var(--brand-font-mono); margin-top:2px; }
+      .opb-timeline-item.track-rail .opb-timeline-name { color:var(--brand-muted-foreground); }
+      .opb-timeline-status { font-size:12px; padding:2px 8px; border-radius:6px; white-space:nowrap; }
+      .opb-timeline-item.track-done .opb-timeline-status { background: color-mix(in srgb, var(--track-done) 12%, transparent); color:var(--track-done); }
+      .opb-timeline-item.track-rail .opb-timeline-status { background:var(--brand-muted); color:var(--brand-muted-foreground); }
+      .opb-timeline-item.track-error .opb-timeline-status { background: color-mix(in srgb, var(--state-error) 12%, transparent); color:var(--state-error); }
+      .opb-alert { margin-top:10px; padding:10px 12px; border-radius:6px; background: color-mix(in srgb, var(--state-error) 8%, transparent); border:1px solid color-mix(in srgb, var(--state-error) 22%, transparent); color:var(--state-error); font-size:13px; display:flex; align-items:flex-start; gap:8px; }
+      .opb-alert i { flex:none; margin-top:1px; }
+
+      /* order meta */
+      .opb-meta-grid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:16px; }
+      .opb-meta-card { background:var(--brand-card); border:1px solid var(--brand-border); border-radius:var(--brand-radius-md); padding:16px; }
+      .opb-meta-label { font-size:12px; color:var(--brand-muted-foreground); margin-bottom:4px; }
+      .opb-meta-value { font-size:14px; color:var(--brand-foreground); line-height:1.4; }
+      .opb-meta-value.mono { font-family:var(--brand-font-mono); }
+      @media (max-width: 860px) { .opb-meta-grid { grid-template-columns: 1fr; } }
+      @media (prefers-reduced-motion: reduce) { .opb-back, .opb-nav-item, .opb-btn { transition:none; } }
+    </style>
+
+    <header class="opb-top-header">
+      <div class="opb-header-inner">
+        <div class="flex items-center gap-3 min-w-0">
+          <span aria-hidden="true" style="display:block;width:10px;height:10px;background:var(--brand-primary);flex:none"></span>
+          <div class="min-w-0">
+            <h1 style="font-size:18px;font-weight:600;line-height:1.2;color:var(--brand-foreground)">订单进度台</h1>
+            <p style="font-size:12px;line-height:1.3;margin-top:2px;color:var(--brand-muted-foreground)">中试 · 量产 订单进度</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="relative" style="width:280px">
+            <i data-lucide="search" style="width:16px;height:16px;position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--brand-muted-foreground)"></i>
+            <input type="text" class="opb-input w-full" placeholder="按订单号 / 客户 / 物料查找" aria-label="搜索">
+          </div>
+          <div class="hidden md:flex items-center gap-1.5 tnum" style="font-size:12px;color:var(--brand-muted-foreground)">
+            <i data-lucide="refresh-cw" style="width:14px;height:14px"></i>
+            <span>已同步 · 08-03 09:12</span>
+          </div>
+          <button class="opb-btn" type="button">
+            <i data-lucide="download" style="width:16px;height:16px"></i>
+            <span>导出</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="opb-body">
+      <aside class="opb-sidebar" id="module-sidebar">
+        <nav class="opb-nav" aria-label="模块导航">
+          <a href="list-mass.html" class="opb-nav-item" data-dom-id="nav-mass">
+            <i data-lucide="package"></i>
+            <span>量产交付</span>
+          </a>
+          <a href="list-trial.html" class="opb-nav-item active" data-dom-id="nav-trial">
+            <i data-lucide="flask-conical"></i>
+            <span>试制进度</span>
+          </a>
+        </nav>
+      </aside>
+      <div data-scroll-region="primary" class="opb-scroll overflow-y-auto">
+        <div class="opb-content">
+
+          <section id="detail-header" class="opb-detail-header">
+            <a href="list-trial.html" class="opb-back" data-dom-id="back-to-list">
+              <i data-lucide="arrow-left" style="width:14px;height:14px"></i>
+              <span>返回列表</span>
+            </a>
+            <div>
+              <h2 class="opb-detail-title">EX-2026-0604796 试制订单详情</h2>
+              <p class="opb-detail-subtitle">远东新能源 · PA66 改性料 · 性能测试异常</p>
+            </div>
+            <div>
+              <span class="opb-badge opb-badge-error">工序异常</span>
+            </div>
+          </section>
+
+          <section id="process-timeline" class="opb-meta-card" style="margin-bottom:24px;">
+            <h3 style="font-size:16px;font-weight:600;margin:0 0 18px;color:var(--brand-foreground)">工序时间轴</h3>
+            <ol class="opb-timeline" aria-label="试制订单工序时间轴">
+              <li class="opb-timeline-item track-done">
+                <div class="opb-timeline-marker" aria-hidden="true"></div>
+                <div class="opb-timeline-content">
+                  <div>
+                    <div class="opb-timeline-name">需求确认</div>
+                    <div class="opb-timeline-date">07-20</div>
+                  </div>
+                  <span class="opb-timeline-status">已完成</span>
+                </div>
+              </li>
+              <li class="opb-timeline-item track-done">
+                <div class="opb-timeline-marker" aria-hidden="true"></div>
+                <div class="opb-timeline-content">
+                  <div>
+                    <div class="opb-timeline-name">配方设计</div>
+                    <div class="opb-timeline-date">07-22</div>
+                  </div>
+                  <span class="opb-timeline-status">已完成</span>
+                </div>
+              </li>
+              <li class="opb-timeline-item track-done">
+                <div class="opb-timeline-marker" aria-hidden="true"></div>
+                <div class="opb-timeline-content">
+                  <div>
+                    <div class="opb-timeline-name">小料试制</div>
+                    <div class="opb-timeline-date">07-25</div>
+                  </div>
+                  <span class="opb-timeline-status">已完成</span>
+                </div>
+              </li>
+              <li class="opb-timeline-item track-error">
+                <div class="opb-timeline-marker" aria-hidden="true"></div>
+                <div class="opb-timeline-content">
+                  <div>
+                    <div class="opb-timeline-name">性能测试</div>
+                    <div class="opb-timeline-date">07-28</div>
+                  </div>
+                  <span class="opb-timeline-status">当前 / 异常</span>
+                </div>
+                <div class="opb-alert">
+                  <i data-lucide="alert-triangle" style="width:14px;height:14px"></i>
+                  <span>拉伸强度低于规格，已发起复测。</span>
+                </div>
+              </li>
+              <li class="opb-timeline-item track-rail">
+                <div class="opb-timeline-marker" aria-hidden="true"></div>
+                <div class="opb-timeline-content">
+                  <div>
+                    <div class="opb-timeline-name">客户送样</div>
+                    <div class="opb-timeline-date">08-02</div>
+                  </div>
+                  <span class="opb-timeline-status">未开始</span>
+                </div>
+              </li>
+              <li class="opb-timeline-item track-rail">
+                <div class="opb-timeline-marker" aria-hidden="true"></div>
+                <div class="opb-timeline-content">
+                  <div>
+                    <div class="opb-timeline-name">试产验证</div>
+                    <div class="opb-timeline-date">08-06</div>
+                  </div>
+                  <span class="opb-timeline-status">未开始</span>
+                </div>
+              </li>
+              <li class="opb-timeline-item track-rail">
+                <div class="opb-timeline-marker" aria-hidden="true"></div>
+                <div class="opb-timeline-content">
+                  <div>
+                    <div class="opb-timeline-name">报告归档</div>
+                    <div class="opb-timeline-date">08-10</div>
+                  </div>
+                  <span class="opb-timeline-status">未开始</span>
+                </div>
+              </li>
+              <li class="opb-timeline-item track-rail">
+                <div class="opb-timeline-marker" aria-hidden="true"></div>
+                <div class="opb-timeline-content">
+                  <div>
+                    <div class="opb-timeline-name">结案</div>
+                    <div class="opb-timeline-date">08-12</div>
+                  </div>
+                  <span class="opb-timeline-status">未开始</span>
+                </div>
+              </li>
+            </ol>
+          </section>
+
+          <section id="order-meta">
+            <h3 style="font-size:16px;font-weight:600;margin:0 0 16px;color:var(--brand-foreground)">订单信息</h3>
+            <div class="opb-meta-grid">
+              <div class="opb-meta-card">
+                <div class="opb-meta-label">试制单号</div>
+                <div class="opb-meta-value mono">EX-2026-0604796</div>
+              </div>
+              <div class="opb-meta-card">
+                <div class="opb-meta-label">客户</div>
+                <div class="opb-meta-value">远东新能源</div>
+              </div>
+              <div class="opb-meta-card">
+                <div class="opb-meta-label">物料</div>
+                <div class="opb-meta-value">PA66 改性料</div>
+              </div>
+              <div class="opb-meta-card">
+                <div class="opb-meta-label">试制目的</div>
+                <div class="opb-meta-value">开发高灼热丝温度规格，满足客户家电外壳认证需求</div>
+              </div>
+              <div class="opb-meta-card">
+                <div class="opb-meta-label">责任工程师</div>
+                <div class="opb-meta-value">李铭远 · 材料研发部</div>
+              </div>
+              <div class="opb-meta-card">
+                <div class="opb-meta-label">当前工序</div>
+                <div class="opb-meta-value" style="color:var(--state-error)">性能测试（异常）</div>
+              </div>
+              <div class="opb-meta-card" style="grid-column:1 / -1;">
+                <div class="opb-meta-label">异常描述</div>
+                <div class="opb-meta-value">拉伸强度实测 142 MPa，低于目标规格 ≥ 155 MPa；缺口冲击强度正常，热变形温度正常。初步排查为玻纤分散不均，已取样留存。</div>
+              </div>
+              <div class="opb-meta-card" style="grid-column:1 / -1;">
+                <div class="opb-meta-label">下一步行动</div>
+                <div class="opb-meta-value">复测批次已于 08-03 08:00 上机，预计 08-03 18:00 出结果；同步评估调整螺杆组合与侧喂料比例。</div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </main>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

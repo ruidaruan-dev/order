@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>量产交付监控</title>
+    <style id="theme-vars">
+/* ============================================================
+   订单进度台 — 品牌令牌
+   方向 A+D：阶段轨道结构骨架 + 瑞士极简执行美学
+   暖纸底 / 深 petrol 主色 / 发丝级分隔 / 单一强调
+   ============================================================ */
+
+:root {
+  /* —— 表面与文字 —— */
+  --brand-background: #f5f3ee;          /* 暖纸 paper */
+  --brand-foreground: #1b1a17;          /* 墨 ink */
+  --brand-card: #fffdf8;                /* 卡片暖白 */
+  --brand-card-foreground: #1b1a17;
+  --brand-popover: #fffdf8;
+  --brand-popover-foreground: #1b1a17;
+
+  /* —— 主色（唯一品牌强调） —— */
+  --brand-primary: #13524a;             /* 深 petrol / teal */
+  --brand-primary-foreground: #f5f3ee;
+
+  /* —— 次级表面 —— */
+  --brand-muted: #ece7dc;               /* 暖中性 muted */
+  --brand-muted-foreground: #6f6a5e;     /* 次级文字 */
+
+  /* —— 边界 / 输入 / 聚焦 —— */
+  --brand-border: #e0dacd;              /* 发丝级分隔 */
+  --brand-input: #e0dacd;
+  --brand-ring: #13524a;
+
+  /* —— 圆角刻度（瑞士克制） —— */
+  --brand-radius-sm: 4px;
+  --brand-radius-md: 8px;
+  --brand-radius-lg: 12px;
+
+  /* —— 状态色（仅真实状态/延误） —— */
+  --state-success: #2f7a4d;
+  --state-warning: #a9700f;
+  --state-error: #ad3a2d;
+
+  /* —— 阶段轨道派生色（中性 + 主色阶） —— */
+  --track-rail: #d9d3c5;                /* 未达段导轨 */
+  --track-done: #3a7d73;                /* 已完成段 */
+  --track-active: #13524a;              /* 当前段 */
+  --track-future: #c2bcaf;              /* 占位 */
+
+  /* —— 字体栈（无衬线 / 系统优先，无外部加载） —— */
+  --brand-font-sans: "Inter", "SF Pro Text", "Segoe UI", system-ui, -apple-system,
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --brand-font-mono: "SF Mono", "JetBrains Mono", "Consolas", "Menlo", monospace;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-background: var(--brand-background);
+    --color-foreground: var(--brand-foreground);
+    --color-card: var(--brand-card);
+    --color-card-foreground: var(--brand-card-foreground);
+    --color-popover: var(--brand-popover);
+    --color-popover-foreground: var(--brand-popover-foreground);
+    --color-primary: var(--brand-primary);
+    --color-primary-foreground: var(--brand-primary-foreground);
+    --color-muted: var(--brand-muted);
+    --color-muted-foreground: var(--brand-muted-foreground);
+    --color-border: var(--brand-border);
+    --color-input: var(--brand-input);
+    --color-ring: var(--brand-ring);
+    --radius-sm: var(--brand-radius-sm);
+    --radius-md: var(--brand-radius-md);
+    --radius-lg: var(--brand-radius-lg);
+  }
+  @layer base {
+    body { background: var(--brand-background); color: var(--brand-foreground); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style id="semantic-token-fallback">
+      .bg-background { background-color: var(--brand-background); }
+      .text-background { color: var(--brand-background); }
+      .border-background { border-color: var(--brand-background); }
+      .ring-background { --tw-ring-color: var(--brand-background); }
+      .bg-foreground { background-color: var(--brand-foreground); }
+      .text-foreground { color: var(--brand-foreground); }
+      .border-foreground { border-color: var(--brand-foreground); }
+      .ring-foreground { --tw-ring-color: var(--brand-foreground); }
+      .bg-card { background-color: var(--brand-card); }
+      .text-card { color: var(--brand-card); }
+      .border-card { border-color: var(--brand-card); }
+      .ring-card { --tw-ring-color: var(--brand-card); }
+      .bg-card-foreground { background-color: var(--brand-card-foreground); }
+      .text-card-foreground { color: var(--brand-card-foreground); }
+      .border-card-foreground { border-color: var(--brand-card-foreground); }
+      .ring-card-foreground { --tw-ring-color: var(--brand-card-foreground); }
+      .bg-popover { background-color: var(--brand-popover); }
+      .text-popover { color: var(--brand-popover); }
+      .border-popover { border-color: var(--brand-popover); }
+      .ring-popover { --tw-ring-color: var(--brand-popover); }
+      .bg-popover-foreground { background-color: var(--brand-popover-foreground); }
+      .text-popover-foreground { color: var(--brand-popover-foreground); }
+      .border-popover-foreground { border-color: var(--brand-popover-foreground); }
+      .ring-popover-foreground { --tw-ring-color: var(--brand-popover-foreground); }
+      .bg-primary { background-color: var(--brand-primary); }
+      .text-primary { color: var(--brand-primary); }
+      .border-primary { border-color: var(--brand-primary); }
+      .ring-primary { --tw-ring-color: var(--brand-primary); }
+      .bg-primary-foreground { background-color: var(--brand-primary-foreground); }
+      .text-primary-foreground { color: var(--brand-primary-foreground); }
+      .border-primary-foreground { border-color: var(--brand-primary-foreground); }
+      .ring-primary-foreground { --tw-ring-color: var(--brand-primary-foreground); }
+      .bg-muted { background-color: var(--brand-muted); }
+      .text-muted { color: var(--brand-muted); }
+      .border-muted { border-color: var(--brand-muted); }
+      .ring-muted { --tw-ring-color: var(--brand-muted); }
+      .bg-muted-foreground { background-color: var(--brand-muted-foreground); }
+      .text-muted-foreground { color: var(--brand-muted-foreground); }
+      .border-muted-foreground { border-color: var(--brand-muted-foreground); }
+      .ring-muted-foreground { --tw-ring-color: var(--brand-muted-foreground); }
+      .bg-border { background-color: var(--brand-border); }
+      .text-border { color: var(--brand-border); }
+      .border-border { border-color: var(--brand-border); }
+      .ring-border { --tw-ring-color: var(--brand-border); }
+      .bg-input { background-color: var(--brand-input); }
+      .text-input { color: var(--brand-input); }
+      .border-input { border-color: var(--brand-input); }
+      .ring-input { --tw-ring-color: var(--brand-input); }
+      .bg-ring { background-color: var(--brand-ring); }
+      .text-ring { color: var(--brand-ring); }
+      .border-ring { border-color: var(--brand-ring); }
+      .ring-ring { --tw-ring-color: var(--brand-ring); }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body class="h-screen overflow-hidden font-sans antialiased">
+  <main data-viewport-mode="app-shell" class="opb-app">
+    <style id="critical-layout">
+      *, *::before, *::after { box-sizing: border-box; }
+      body { margin: 0; font-family: var(--brand-font-sans); font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; }
+      .tnum { font-variant-numeric: tabular-nums; }
+      .opb-mono { font-family: var(--brand-font-mono); }
+      .opb-app { display:flex; flex-direction:column; height:100vh; height:100dvh; overflow:hidden; }
+      .opb-top-header { flex:none; height:56px; background: color-mix(in srgb, var(--brand-card) 95%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom:1px solid var(--brand-border); }
+      .opb-header-inner { height:100%; display:flex; align-items:center; justify-content:space-between; padding:0 24px; }
+      .opb-body { flex:1 1 0%; min-height:0; display:flex; }
+      .opb-sidebar { flex:none; width:180px; border-right:1px solid var(--brand-border); background:var(--brand-card); padding:16px 12px; }
+      .opb-nav { display:flex; flex-direction:column; gap:4px; }
+      .opb-nav-item { display:flex; align-items:center; gap:8px; height:40px; padding:0 12px; border-radius:6px; font-size:14px; color:var(--brand-muted-foreground); text-decoration:none; transition: background-color 140ms ease, color 140ms ease; }
+      .opb-nav-item:hover { background:var(--brand-muted); color:var(--brand-foreground); }
+      .opb-nav-item.active { background:var(--brand-primary); color:var(--brand-primary-foreground); }
+      .opb-nav-item i { width:18px; height:18px; }
+      .opb-scroll { flex:1 1 0%; min-height:0; overflow-y:auto; -webkit-overflow-scrolling: touch; }
+      .opb-content { padding:24px 32px 32px; }
+      .opb-input, .opb-select { height:36px; border:1px solid var(--brand-border); border-radius:6px; background:var(--brand-card); color:var(--brand-foreground); font-size:13px; font-family:inherit; transition:border-color 140ms ease, box-shadow 140ms ease; }
+      .opb-input { padding:0 12px 0 36px; }
+      .opb-select { padding:0 32px 0 12px; appearance:none; -webkit-appearance:none; cursor:pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236f6a5e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; }
+      .opb-input::placeholder { color:var(--brand-muted-foreground); }
+      .opb-input:focus, .opb-select:focus { outline:none; border-color:var(--brand-primary); box-shadow:0 0 0 2px color-mix(in srgb, var(--brand-primary) 22%, transparent); }
+      .opb-btn { height:36px; padding:0 14px; border:1px solid var(--brand-border); border-radius:6px; background:var(--brand-card); color:var(--brand-foreground); font-size:13px; font-family:inherit; display:inline-flex; align-items:center; gap:6px; cursor:pointer; transition:background-color 140ms ease, border-color 140ms ease; }
+      .opb-btn:hover { background:var(--brand-muted); }
+      .opb-btn-text { height:auto; padding:4px 8px; border:none; background:transparent; color:var(--brand-muted-foreground); }
+      .opb-btn-text:hover { background: color-mix(in srgb, var(--brand-muted) 50%, transparent); color:var(--brand-foreground); }
+      .opb-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+      .opb-table { table-layout:fixed; width:100%; min-width:980px; border-collapse:separate; border-spacing:0; background:var(--brand-card); border:1px solid var(--brand-border); border-radius:var(--brand-radius-md); overflow:hidden; }
+      .opb-table thead th { background: color-mix(in srgb, var(--brand-muted) 40%, transparent); color:var(--brand-muted-foreground); font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:0.06em; text-align:left; padding:10px 12px; border-bottom:1px solid var(--brand-border); vertical-align:middle; }
+      .opb-table tbody td { padding:14px 12px; border-bottom:1px solid var(--brand-border); vertical-align:middle; font-size:13px; color:var(--brand-foreground); }
+      .opb-table tbody tr:last-child td { border-bottom:none; }
+      .opb-table tbody tr { transition: background-color 140ms ease; cursor:pointer; }
+      .opb-table tbody tr:hover { background: color-mix(in srgb, var(--brand-primary) 4%, transparent); }
+      .opb-status { display:inline-flex; align-items:center; gap:6px; font-size:13px; }
+      .opb-status .dot { width:6px; height:6px; border-radius:999px; flex:none; }
+      .opb-status-ok { color:var(--brand-muted-foreground); }
+      .opb-status-late { color:var(--state-error); }
+      .opb-status-late .dot { background:var(--state-error); }
+      .opb-tag { display:inline-flex; align-items:center; height:22px; padding:0 8px; border-radius:6px; font-size:12px; line-height:1; white-space:nowrap; background:var(--brand-muted); color:var(--brand-muted-foreground); }
+      .stage-labels { display:flex; gap:4px; margin-bottom:6px; }
+      .stage-labels span { flex:1 1 0%; text-align:center; font-size:10px; color:var(--brand-muted-foreground); line-height:1.2; }
+      .stage-track { display:flex; gap:4px; align-items:center; }
+      .stage-track .seg { flex:1 1 0%; height:6px; border-radius:999px; background:var(--track-rail); }
+      .stage-track .seg.done { background:var(--track-done); }
+      .stage-track .seg.active { background:var(--track-active); }
+      .opb-footer { margin-top:24px; padding-top:16px; border-top:1px solid var(--brand-border); display:flex; align-items:center; justify-content:space-between; gap:16px; font-size:12px; color:var(--brand-muted-foreground); flex-wrap:wrap; }
+      .opb-legend { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+      .opb-legend-item { display:inline-flex; align-items:center; gap:6px; }
+      .opb-legend-item .swatch { width:14px; height:6px; border-radius:999px; }
+      @media (prefers-reduced-motion: reduce) { .opb-table tbody tr { transition:none; } }
+    </style>
+
+    <header class="opb-top-header">
+      <div class="opb-header-inner">
+        <div class="flex items-center gap-3 min-w-0">
+          <span aria-hidden="true" style="display:block;width:10px;height:10px;background:var(--brand-primary);flex:none"></span>
+          <div class="min-w-0">
+            <h1 style="font-size:18px;font-weight:600;line-height:1.2;color:var(--brand-foreground)">订单进度台</h1>
+            <p style="font-size:12px;line-height:1.3;margin-top:2px;color:var(--brand-muted-foreground)">中试 · 量产 订单进度</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="relative" style="width:280px">
+            <i data-lucide="search" style="width:16px;height:16px;position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--brand-muted-foreground)"></i>
+            <input type="text" class="opb-input w-full" placeholder="按订单号 / 客户 / 物料查找" aria-label="搜索">
+          </div>
+          <div class="hidden md:flex items-center gap-1.5 tnum" style="font-size:12px;color:var(--brand-muted-foreground)">
+            <i data-lucide="refresh-cw" style="width:14px;height:14px"></i>
+            <span>已同步 · 08-03 09:12</span>
+          </div>
+          <button class="opb-btn" type="button">
+            <i data-lucide="download" style="width:16px;height:16px"></i>
+            <span>导出</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="opb-body">
+      <aside class="opb-sidebar" id="module-sidebar">
+        <nav class="opb-nav" aria-label="模块导航">
+          <a href="list-mass.html" class="opb-nav-item active" data-dom-id="nav-mass">
+            <i data-lucide="package"></i>
+            <span>量产交付</span>
+          </a>
+          <a href="list-trial.html" class="opb-nav-item" data-dom-id="nav-trial">
+            <i data-lucide="flask-conical"></i>
+            <span>试制进度</span>
+          </a>
+        </nav>
+      </aside>
+      <div data-scroll-region="primary" class="opb-scroll overflow-y-auto">
+        <div class="opb-content">
+          <div style="display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:20px; gap:16px;">
+            <div>
+              <h2 style="font-size:24px;font-weight:600;line-height:1.2;color:var(--brand-foreground)">量产交付监控</h2>
+              <p style="font-size:13px;color:var(--brand-muted-foreground);margin-top:4px;">我的量产订单 · 6 单</p>
+            </div>
+            <button type="button" class="opb-btn opb-btn-text" style="font-size:14px;">
+              <i data-lucide="settings-2" style="width:14px;height:14px"></i>
+              <span>自定义模块顺序</span>
+            </button>
+          </div>
+
+          <div id="filter-bar" style="display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <select class="opb-select" aria-label="客户筛选">
+                <option>全部客户</option>
+                <option>远东新能源</option>
+                <option>蓝石精工</option>
+                <option>海创医疗</option>
+                <option>中悦电子</option>
+              </select>
+              <select class="opb-select" aria-label="阶段筛选">
+                <option>全部阶段</option>
+                <option>已接单</option>
+                <option>生产中</option>
+                <option>已入库</option>
+                <option>已发货</option>
+                <option>已签收</option>
+              </select>
+              <select class="opb-select" aria-label="是否按期">
+                <option>全部</option>
+                <option>按期</option>
+                <option>逾期</option>
+              </select>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--brand-muted-foreground);">
+              <i data-lucide="filter" style="width:14px;height:14px"></i>
+              <span>共 6 单</span>
+            </div>
+          </div>
+
+          <section id="order-list" class="opb-table-wrap">
+            <table class="opb-table">
+              <colgroup>
+                <col style="width:150px">
+                <col style="width:140px">
+                <col style="width:260px">
+                <col style="width:260px">
+                <col style="width:100px">
+                <col style="width:88px">
+                <col style="width:84px">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>订单号</th>
+                  <th>客户</th>
+                  <th>物料描述</th>
+                  <th>
+                    <div style="display:flex;flex-direction:column;gap:2px;">
+                      <span>阶段进度</span>
+                      <div class="stage-labels" aria-hidden="true">
+                        <span>已接单</span>
+                        <span>生产中</span>
+                        <span>已入库</span>
+                        <span>已发货</span>
+                        <span>已签收</span>
+                      </div>
+                    </div>
+                  </th>
+                  <th>预计交期</th>
+                  <th>在途天数</th>
+                  <th>状态</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr data-dom-id="row-mass-SO20260817" onclick="location.href='detail-mass.html'">
+                  <td class="opb-mono tnum">SO-2026-0817</td>
+                  <td>远东新能源</td>
+                  <td>PA66 改性料</td>
+                  <td>
+                    <div class="stage-track" aria-label="当前阶段：生产中">
+                      <div class="seg done"></div>
+                      <div class="seg active"></div>
+                      <div class="seg"></div>
+                      <div class="seg"></div>
+                      <div class="seg"></div>
+                    </div>
+                  </td>
+                  <td class="opb-mono tnum">08-19</td>
+                  <td class="opb-mono tnum">—</td>
+                  <td><span class="opb-status opb-status-ok">正常</span></td>
+                </tr>
+                <tr data-dom-id="row-mass-SO20260820" onclick="location.href='detail-mass.html'">
+                  <td class="opb-mono tnum">SO-2026-0820</td>
+                  <td>远东新能源</td>
+                  <td>PBT 增强料</td>
+                  <td>
+                    <div class="stage-track" aria-label="当前阶段：已接单">
+                      <div class="seg active"></div>
+                      <div class="seg"></div>
+                      <div class="seg"></div>
+                      <div class="seg"></div>
+                      <div class="seg"></div>
+                    </div>
+                  </td>
+                  <td class="opb-mono tnum">08-26</td>
+                  <td class="opb-mono tnum">—</td>
+                  <td><span class="opb-status opb-status-ok">正常</span></td>
+                </tr>
+                <tr data-dom-id="row-mass-SO20260805" onclick="location.href='detail-mass.html'">
+                  <td class="opb-mono tnum">SO-2026-0805</td>
+                  <td>蓝石精工</td>
+                  <td>PC/ABS 合金</td>
+                  <td>
+                    <div class="stage-track" aria-label="当前阶段：在途(已发货)">
+                      <div class="seg done"></div>
+                      <div class="seg done"></div>
+                      <div class="seg done"></div>
+                      <div class="seg active"></div>
+                      <div class="seg"></div>
+                    </div>
+                  </td>
+                  <td class="opb-mono tnum">08-04</td>
+                  <td class="opb-mono tnum">3天</td>
+                  <td><span class="opb-status opb-status-ok">按期</span></td>
+                </tr>
+                <tr data-dom-id="row-mass-SO20260799" onclick="location.href='detail-mass.html'">
+                  <td class="opb-mono tnum">SO-2026-0799</td>
+                  <td>蓝石精工</td>
+                  <td>PA6 增强料</td>
+                  <td>
+                    <div class="stage-track" aria-label="当前阶段：已签收">
+                      <div class="seg done"></div>
+                      <div class="seg done"></div>
+                      <div class="seg done"></div>
+                      <div class="seg done"></div>
+                      <div class="seg done"></div>
+                    </div>
+                  </td>
+                  <td class="opb-mono tnum">07-30</td>
+                  <td class="opb-mono tnum">—</td>
+                  <td><span class="opb-status opb-status-ok">按期</span></td>
+                </tr>
+                <tr data-dom-id="row-mass-SO20260825" onclick="location.href='detail-mass.html'">
+                  <td class="opb-mono tnum">SO-2026-0825</td>
+                  <td>海创医疗</td>
+                  <td>PEEK 医疗级</td>
+                  <td>
+                    <div class="stage-track" aria-label="当前阶段：生产中">
+                      <div class="seg done"></div>
+                      <div class="seg active"></div>
+                      <div class="seg"></div>
+                      <div class="seg"></div>
+                      <div class="seg"></div>
+                    </div>
+                  </td>
+                  <td class="opb-mono tnum">08-15</td>
+                  <td class="opb-mono tnum">—</td>
+                  <td><span class="opb-status opb-status-late"><span class="dot"></span>逾期</span></td>
+                </tr>
+                <tr data-dom-id="row-mass-SO20260811" onclick="location.href='detail-mass.html'">
+                  <td class="opb-mono tnum">SO-2026-0811</td>
+                  <td>海创医疗</td>
+                  <td>PPSU 医用级</td>
+                  <td>
+                    <div class="stage-track" aria-label="当前阶段：已入库">
+                      <div class="seg done"></div>
+                      <div class="seg done"></div>
+                      <div class="seg active"></div>
+                      <div class="seg"></div>
+                      <div class="seg"></div>
+                    </div>
+                  </td>
+                  <td class="opb-mono tnum">08-09</td>
+                  <td class="opb-mono tnum">—</td>
+                  <td><span class="opb-status opb-status-ok">正常</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <footer class="opb-footer">
+            <div class="opb-legend">
+              <span>阶段图例：</span>
+              <span class="opb-legend-item"><span class="swatch" style="background:var(--track-done)"></span>已完成</span>
+              <span class="opb-legend-item"><span class="swatch" style="background:var(--track-active)"></span>当前阶段</span>
+              <span class="opb-legend-item"><span class="swatch" style="background:var(--track-rail)"></span>未开始</span>
+            </div>
+            <div>SAP 055｜定时同步 · 最近同步 08-03 09:12</div>
+          </footer>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script>lucide.createIcons();</script>
+</body>
+</html>
