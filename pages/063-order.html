@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>063 订单数据视图</title>
+    <style id="theme-vars">
+/* ============================================================
+   订单进度台 — 品牌令牌
+   方向 A+D：阶段轨道结构骨架 + 瑞士极简执行美学
+   暖纸底 / 深 petrol 主色 / 发丝级分隔 / 单一强调
+   ============================================================ */
+
+:root {
+  /* —— 表面与文字 —— */
+  --brand-background: #f5f3ee;          /* 暖纸 paper */
+  --brand-foreground: #1b1a17;          /* 墨 ink */
+  --brand-card: #fffdf8;                /* 卡片暖白 */
+  --brand-card-foreground: #1b1a17;
+  --brand-popover: #fffdf8;
+  --brand-popover-foreground: #1b1a17;
+
+  /* —— 主色（唯一品牌强调） —— */
+  --brand-primary: #13524a;             /* 深 petrol / teal */
+  --brand-primary-foreground: #f5f3ee;
+
+  /* —— 次级表面 —— */
+  --brand-muted: #ece7dc;               /* 暖中性 muted */
+  --brand-muted-foreground: #6f6a5e;     /* 次级文字 */
+
+  /* —— 边界 / 输入 / 聚焦 —— */
+  --brand-border: #e0dacd;              /* 发丝级分隔 */
+  --brand-input: #e0dacd;
+  --brand-ring: #13524a;
+
+  /* —— 圆角刻度（瑞士克制） —— */
+  --brand-radius-sm: 4px;
+  --brand-radius-md: 8px;
+  --brand-radius-lg: 12px;
+
+  /* —— 状态色（仅真实状态/延误） —— */
+  --state-success: #2f7a4d;
+  --state-warning: #a9700f;
+  --state-error: #ad3a2d;
+
+  /* —— 阶段轨道派生色（中性 + 主色阶） —— */
+  --track-rail: #d9d3c5;                /* 未达段导轨 */
+  --track-done: #3a7d73;                /* 已完成段 */
+  --track-active: #13524a;              /* 当前段 */
+  --track-future: #c2bcaf;              /* 占位 */
+
+  /* —— 字体栈（无衬线 / 系统优先，无外部加载） —— */
+  --brand-font-sans: "Inter", "SF Pro Text", "Segoe UI", system-ui, -apple-system,
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --brand-font-mono: "SF Mono", "JetBrains Mono", "Consolas", "Menlo", monospace;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-background: var(--brand-background);
+    --color-foreground: var(--brand-foreground);
+    --color-card: var(--brand-card);
+    --color-card-foreground: var(--brand-card-foreground);
+    --color-popover: var(--brand-popover);
+    --color-popover-foreground: var(--brand-popover-foreground);
+    --color-primary: var(--brand-primary);
+    --color-primary-foreground: var(--brand-primary-foreground);
+    --color-muted: var(--brand-muted);
+    --color-muted-foreground: var(--brand-muted-foreground);
+    --color-border: var(--brand-border);
+    --color-input: var(--brand-input);
+    --color-ring: var(--brand-ring);
+    --radius-sm: var(--brand-radius-sm);
+    --radius-md: var(--brand-radius-md);
+    --radius-lg: var(--brand-radius-lg);
+  }
+  @layer base {
+    body { background: var(--brand-background); color: var(--brand-foreground); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style id="semantic-token-fallback">
+      .bg-background { background-color: var(--brand-background); }
+      .text-background { color: var(--brand-background); }
+      .border-background { border-color: var(--brand-background); }
+      .ring-background { --tw-ring-color: var(--brand-background); }
+      .bg-foreground { background-color: var(--brand-foreground); }
+      .text-foreground { color: var(--brand-foreground); }
+      .border-foreground { border-color: var(--brand-foreground); }
+      .ring-foreground { --tw-ring-color: var(--brand-foreground); }
+      .bg-card { background-color: var(--brand-card); }
+      .text-card { color: var(--brand-card); }
+      .border-card { border-color: var(--brand-card); }
+      .ring-card { --tw-ring-color: var(--brand-card); }
+      .bg-card-foreground { background-color: var(--brand-card-foreground); }
+      .text-card-foreground { color: var(--brand-card-foreground); }
+      .border-card-foreground { border-color: var(--brand-card-foreground); }
+      .ring-card-foreground { --tw-ring-color: var(--brand-card-foreground); }
+      .bg-popover { background-color: var(--brand-popover); }
+      .text-popover { color: var(--brand-popover); }
+      .border-popover { border-color: var(--brand-popover); }
+      .ring-popover { --tw-ring-color: var(--brand-popover); }
+      .bg-popover-foreground { background-color: var(--brand-popover-foreground); }
+      .text-popover-foreground { color: var(--brand-popover-foreground); }
+      .border-popover-foreground { border-color: var(--brand-popover-foreground); }
+      .ring-popover-foreground { --tw-ring-color: var(--brand-popover-foreground); }
+      .bg-primary { background-color: var(--brand-primary); }
+      .text-primary { color: var(--brand-primary); }
+      .border-primary { border-color: var(--brand-primary); }
+      .ring-primary { --tw-ring-color: var(--brand-primary); }
+      .bg-primary-foreground { background-color: var(--brand-primary-foreground); }
+      .text-primary-foreground { color: var(--brand-primary-foreground); }
+      .border-primary-foreground { border-color: var(--brand-primary-foreground); }
+      .ring-primary-foreground { --tw-ring-color: var(--brand-primary-foreground); }
+      .bg-muted { background-color: var(--brand-muted); }
+      .text-muted { color: var(--brand-muted); }
+      .border-muted { border-color: var(--brand-muted); }
+      .ring-muted { --tw-ring-color: var(--brand-muted); }
+      .bg-muted-foreground { background-color: var(--brand-muted-foreground); }
+      .text-muted-foreground { color: var(--brand-muted-foreground); }
+      .border-muted-foreground { border-color: var(--brand-muted-foreground); }
+      .ring-muted-foreground { --tw-ring-color: var(--brand-muted-foreground); }
+      .bg-border { background-color: var(--brand-border); }
+      .text-border { color: var(--brand-border); }
+      .border-border { border-color: var(--brand-border); }
+      .ring-border { --tw-ring-color: var(--brand-border); }
+      .bg-input { background-color: var(--brand-input); }
+      .text-input { color: var(--brand-input); }
+      .border-input { border-color: var(--brand-input); }
+      .ring-input { --tw-ring-color: var(--brand-input); }
+      .bg-ring { background-color: var(--brand-ring); }
+      .text-ring { color: var(--brand-ring); }
+      .border-ring { border-color: var(--brand-ring); }
+      .ring-ring { --tw-ring-color: var(--brand-ring); }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body class="min-h-screen font-sans antialiased">
+    <main data-scroll-region='primary' class='relative min-h-screen bg-background overflow-y-auto overflow-x-hidden'>
+      <style>
+        .app-shell { position: relative; min-height: 100vh; }
+        .workspace { margin-left: 180px; margin-top: 56px; min-height: calc(100vh - 56px); padding: 24px; }
+        .data-table-wrap { overflow-x: auto; }
+        .sticky-header { position: sticky; top: 0; z-index: 10; }
+        .tabular { font-variant-numeric: tabular-nums; }
+        .bg-state-success { background-color: var(--state-success); }
+        .text-state-error { color: var(--state-error); }
+        .bg-track-done { background-color: var(--track-done); }
+        @media (max-width: 1024px) {
+          .workspace { margin-left: 0; padding: 16px; }
+          #module-sidebar { display: none; }
+        }
+      </style>
+      <div data-viewport-mode='app-shell' class='app-shell'>
+        <header id='shell-frame' class='fixed top-0 left-0 right-0 h-14 z-50 bg-card border-b border-border flex items-center justify-between px-4'>
+          <div class='flex items-center gap-3'>
+            <i data-lucide='box' class='w-6 h-6 text-primary'></i>
+            <span class='font-semibold text-foreground tracking-tight'>订单进度台</span>
+            <span class='mx-2 h-5 w-px bg-border'></span>
+            <span class='text-sm text-muted-foreground'>063 订单数据视图</span>
+          </div>
+          <div class='flex items-center gap-3'>
+            <div class='relative hidden md:block'>
+              <i data-lucide='search' class='absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground'></i>
+              <input type='text' placeholder='全局搜索…' class='h-9 w-64 rounded-md border border-input bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring'>
+            </div>
+            <div class='flex items-center gap-1.5 text-xs text-muted-foreground'>
+              <span class='w-2 h-2 rounded-full bg-state-success'></span>
+              同步正常
+            </div>
+            <button class='inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-primary text-primary-foreground text-sm hover:bg-primary/90'>
+              <i data-lucide='download' class='w-4 h-4'></i>
+              导出
+            </button>
+          </div>
+        </header>
+
+        <aside id='module-sidebar' class='fixed top-14 left-0 bottom-0 w-[180px] z-40 bg-card border-r border-border'>
+          <nav class='flex flex-col gap-1 p-3'>
+            <a id='nav-mass' data-dom-id='nav-mass' href='list-mass.html' class='flex items-center gap-3 px-3 py-2.5 rounded-md text-sm text-muted-foreground hover:bg-muted transition-colors'>
+              <i data-lucide='package' class='w-4 h-4'></i>
+              量产交付
+            </a>
+            <a id='nav-trial' data-dom-id='nav-trial' href='list-trial.html' class='flex items-center gap-3 px-3 py-2.5 rounded-md text-sm text-muted-foreground hover:bg-muted transition-colors'>
+              <i data-lucide='flask-conical' class='w-4 h-4'></i>
+              试制进度
+            </a>
+            <a id='nav-063-order' data-dom-id='nav-063-order' href='063-order.html' class='flex items-center gap-3 px-3 py-2.5 rounded-md text-sm bg-primary/10 text-primary border-r-2 border-primary'>
+              <i data-lucide='bar-chart-3' class='w-4 h-4'></i>
+              063 数据视图
+            </a>
+          </nav>
+        </aside>
+
+        <div class='workspace'>
+          <section id='page-header' class='mb-6'>
+            <div class='flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4'>
+              <div>
+                <h1 class='text-2xl font-semibold text-foreground tracking-tight'>063 订单数据视图</h1>
+                <p class='mt-1 text-sm text-muted-foreground'>按 063 响应字段聚合的订单全景，支持按客户、物料、创建人等多维洞察。</p>
+              </div>
+              <div class='flex flex-wrap items-center gap-3'>
+                <div class='flex items-center gap-2'>
+                  <label class='text-xs text-muted-foreground'>日期类型</label>
+                  <select class='h-9 rounded-md border border-input bg-background px-2 text-sm outline-none focus:ring-2 focus:ring-ring'>
+                    <option>创建日期</option>
+                    <option>过账日期</option>
+                  </select>
+                </div>
+                <input type='date' value='2026-06-22' class='h-9 rounded-md border border-input bg-background px-2 text-sm outline-none focus:ring-2 focus:ring-ring'>
+                <span class='text-muted-foreground'>-</span>
+                <input type='date' value='2026-07-24' class='h-9 rounded-md border border-input bg-background px-2 text-sm outline-none focus:ring-2 focus:ring-ring'>
+                <div class='relative'>
+                  <i data-lucide='search' class='absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground'></i>
+                  <input type='text' placeholder='搜索订单 / 客户 / 物料…' class='h-9 w-56 rounded-md border border-input bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring'>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id='insight-cards' class='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 mb-6'>
+            <div class='bg-card border border-border rounded-lg p-4'>
+              <div class='flex items-center gap-2 text-muted-foreground mb-3'>
+                <i data-lucide='clipboard-list' class='w-4 h-4'></i>
+                <span class='text-xs'>订单总数</span>
+              </div>
+              <div class='text-2xl font-semibold tabular-nums text-foreground'>12</div>
+              <div class='mt-1 text-xs text-muted-foreground'>本次视图</div>
+            </div>
+            <div class='bg-card border border-border rounded-lg p-4'>
+              <div class='flex items-center gap-2 text-muted-foreground mb-3'>
+                <i data-lucide='truck' class='w-4 h-4'></i>
+                <span class='text-xs'>已发货 / 未发货</span>
+              </div>
+              <div class='text-2xl font-semibold tabular-nums text-foreground'>8 / 4</div>
+              <div class='mt-1 text-xs text-muted-foreground'>交付率 66.7%</div>
+            </div>
+            <div class='bg-card border border-border rounded-lg p-4'>
+              <div class='flex items-center gap-2 text-muted-foreground mb-3'>
+                <i data-lucide='users' class='w-4 h-4'></i>
+                <span class='text-xs'>客户数</span>
+              </div>
+              <div class='text-2xl font-semibold tabular-nums text-foreground'>5</div>
+              <div class='mt-1 text-xs text-muted-foreground'>售达方</div>
+            </div>
+            <div class='bg-card border border-border rounded-lg p-4'>
+              <div class='flex items-center gap-2 text-muted-foreground mb-3'>
+                <i data-lucide='package-open' class='w-4 h-4'></i>
+                <span class='text-xs'>物料数</span>
+              </div>
+              <div class='text-2xl font-semibold tabular-nums text-foreground'>5</div>
+              <div class='mt-1 text-xs text-muted-foreground'>物料描述</div>
+            </div>
+            <div class='bg-card border border-border rounded-lg p-4'>
+              <div class='flex items-center gap-2 text-muted-foreground mb-3'>
+                <i data-lucide='banknote' class='w-4 h-4'></i>
+                <span class='text-xs'>总金额 (CNY)</span>
+              </div>
+              <div class='text-2xl font-semibold tabular-nums text-foreground'>¥77,601.50</div>
+              <div class='mt-1 text-xs text-muted-foreground'>不含税合计</div>
+            </div>
+            <div class='bg-card border border-border rounded-lg p-4'>
+              <div class='flex items-center gap-2 text-muted-foreground mb-3'>
+                <i data-lucide='calculator' class='w-4 h-4'></i>
+                <span class='text-xs'>平均单价</span>
+              </div>
+              <div class='text-2xl font-semibold tabular-nums text-foreground'>¥29.17</div>
+              <div class='mt-1 text-xs text-muted-foreground'>按数量加权</div>
+            </div>
+          </section>
+
+          <section id='insight-charts' class='grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6'>
+            <div class='bg-card border border-border rounded-lg p-4 chart-card'>
+              <h3 class='text-sm font-medium text-foreground mb-4'>交付状态分布</h3>
+              <div class='flex items-center justify-center'>
+                <svg viewBox='0 0 36 36' class='w-32 h-32'>
+                  <circle cx='18' cy='18' r='15.9155' fill='none' stroke='var(--brand-border)' stroke-width='4'></circle>
+                  <circle cx='18' cy='18' r='15.9155' fill='none' stroke='var(--brand-primary)' stroke-width='4' stroke-dasharray='66.67 33.33' stroke-dashoffset='-25' stroke-linecap='round'></circle>
+                  <circle cx='18' cy='18' r='15.9155' fill='none' stroke='var(--brand-muted-foreground)' stroke-width='4' stroke-dasharray='33.33 66.67' stroke-dashoffset='41.67' stroke-linecap='round'></circle>
+                </svg>
+              </div>
+              <div class='flex items-center justify-center gap-4 mt-3 text-xs'>
+                <div class='flex items-center gap-1.5'>
+                  <span class='w-2.5 h-2.5 rounded-full bg-primary'></span>
+                  <span class='text-muted-foreground'>已发货</span>
+                  <span class='font-medium tabular-nums text-foreground'>8</span>
+                </div>
+                <div class='flex items-center gap-1.5'>
+                  <span class='w-2.5 h-2.5 rounded-full bg-muted-foreground'></span>
+                  <span class='text-muted-foreground'>未发货</span>
+                  <span class='font-medium tabular-nums text-foreground'>4</span>
+                </div>
+              </div>
+            </div>
+
+            <div class='bg-card border border-border rounded-lg p-4 chart-card'>
+              <h3 class='text-sm font-medium text-foreground mb-4'>客户金额排名 Top 5</h3>
+              <svg viewBox='0 0 320 180' class='w-full h-44'>
+                <line x1='80' y1='16' x2='80' y2='160' stroke='var(--brand-border)'></line>
+                <g>
+                  <text x='76' y='32' text-anchor='end' class='text-[10px] fill-muted-foreground'>武汉光迅科技</text>
+                  <rect x='82' y='24' width='206' height='12' rx='2' fill='var(--brand-primary)'></rect>
+                  <text x='292' y='34' text-anchor='end' class='text-[10px] tabular-nums fill-foreground'>¥23,474</text>
+                </g>
+                <g>
+                  <text x='76' y='58' text-anchor='end' class='text-[10px] fill-muted-foreground'>成都宏明双新</text>
+                  <rect x='82' y='50' width='181' height='12' rx='2' fill='var(--brand-primary)' opacity='0.85'></rect>
+                  <text x='267' y='60' text-anchor='end' class='text-[10px] tabular-nums fill-foreground'>¥20,604</text>
+                </g>
+                <g>
+                  <text x='76' y='84' text-anchor='end' class='text-[10px] fill-muted-foreground'>深圳比亚迪</text>
+                  <rect x='82' y='76' width='132' height='12' rx='2' fill='var(--brand-primary)' opacity='0.7'></rect>
+                  <text x='218' y='86' text-anchor='end' class='text-[10px] tabular-nums fill-foreground'>¥15,050</text>
+                </g>
+                <g>
+                  <text x='76' y='110' text-anchor='end' class='text-[10px] fill-muted-foreground'>东莞立讯精密</text>
+                  <rect x='82' y='102' width='91' height='12' rx='2' fill='var(--brand-primary)' opacity='0.55'></rect>
+                  <text x='177' y='112' text-anchor='end' class='text-[10px] tabular-nums fill-foreground'>¥10,358.5</text>
+                </g>
+                <g>
+                  <text x='76' y='136' text-anchor='end' class='text-[10px] fill-muted-foreground'>重庆天海电子</text>
+                  <rect x='82' y='128' width='71' height='12' rx='2' fill='var(--brand-primary)' opacity='0.4'></rect>
+                  <text x='157' y='138' text-anchor='end' class='text-[10px] tabular-nums fill-foreground'>¥8,115</text>
+                </g>
+              </svg>
+            </div>
+
+            <div class='bg-card border border-border rounded-lg p-4 chart-card'>
+              <h3 class='text-sm font-medium text-foreground mb-4'>物料数量排名 Top 5</h3>
+              <svg viewBox='0 0 320 180' class='w-full h-44'>
+                <line x1='110' y1='16' x2='110' y2='160' stroke='var(--brand-border)'></line>
+                <g>
+                  <text x='106' y='32' text-anchor='end' class='text-[10px] fill-muted-foreground'>PA66-R40G30 BK201</text>
+                  <rect x='112' y='24' width='200' height='12' rx='2' fill='var(--brand-primary)'></rect>
+                  <text x='316' y='34' text-anchor='end' class='text-[10px] tabular-nums fill-foreground'>1,000</text>
+                </g>
+                <g>
+                  <text x='106' y='58' text-anchor='end' class='text-[10px] fill-muted-foreground'>PA66-R40G30 BK203</text>
+                  <rect x='112' y='50' width='130' height='12' rx='2' fill='var(--brand-primary)' opacity='0.85'></rect>
+                  <text x='246' y='60' text-anchor='end' class='text-[10px] tabular-nums fill-foreground'>650</text>
+                </g>
+                <g>
+                  <text x='106' y='84' text-anchor='end' class='text-[10px] fill-muted-foreground'>PA66-R40G30 BK202</text>
+                  <rect x='112' y='76' width='80' height='12' rx='2' fill='var(--brand-primary)' opacity='0.7'></rect>
+                  <text x='196' y='86' text-anchor='end' class='text-[10px] tabular-nums fill-foreground'>400</text>
+                </g>
+                <g>
+                  <text x='106' y='110' text-anchor='end' class='text-[10px] fill-muted-foreground'>PBT-G30 BK</text>
+                  <rect x='112' y='102' width='70' height='12' rx='2' fill='var(--brand-primary)' opacity='0.55'></rect>
+                  <text x='186' y='112' text-anchor='end' class='text-[10px] tabular-nums fill-foreground'>350</text>
+                </g>
+                <g>
+                  <text x='106' y='136' text-anchor='end' class='text-[10px] fill-muted-foreground'>PA6-GF30</text>
+                  <rect x='112' y='128' width='52' height='12' rx='2' fill='var(--brand-primary)' opacity='0.4'></rect>
+                  <text x='168' y='138' text-anchor='end' class='text-[10px] tabular-nums fill-foreground'>260</text>
+                </g>
+              </svg>
+            </div>
+
+            <div class='bg-card border border-border rounded-lg p-4 chart-card'>
+              <h3 class='text-sm font-medium text-foreground mb-4'>创建人贡献</h3>
+              <svg viewBox='0 0 320 180' class='w-full h-44'>
+                <g>
+                  <text x='50' y='34' text-anchor='end' class='text-[10px] fill-muted-foreground'>李娜</text>
+                  <rect x='54' y='24' width='185' height='10' rx='2' fill='var(--brand-primary)'></rect>
+                  <text x='243' y='33' class='text-[9px] tabular-nums fill-foreground'>¥23,474</text>
+                  <rect x='54' y='36' width='45' height='5' rx='1' fill='var(--track-done)'></rect>
+                  <text x='103' y='41' class='text-[8px] tabular-nums fill-muted-foreground'>3 单</text>
+                </g>
+                <g>
+                  <text x='50' y='64' text-anchor='end' class='text-[10px] fill-muted-foreground'>熊燕群</text>
+                  <rect x='54' y='54' width='162' height='10' rx='2' fill='var(--brand-primary)' opacity='0.85'></rect>
+                  <text x='220' y='63' class='text-[9px] tabular-nums fill-foreground'>¥20,604</text>
+                  <rect x='54' y='66' width='45' height='5' rx='1' fill='var(--track-done)' opacity='0.85'></rect>
+                  <text x='103' y='71' class='text-[8px] tabular-nums fill-muted-foreground'>3 单</text>
+                </g>
+                <g>
+                  <text x='50' y='94' text-anchor='end' class='text-[10px] fill-muted-foreground'>张伟</text>
+                  <rect x='54' y='84' width='138' height='10' rx='2' fill='var(--brand-primary)' opacity='0.7'></rect>
+                  <text x='196' y='93' class='text-[9px] tabular-nums fill-foreground'>¥17,565</text>
+                  <rect x='54' y='96' width='45' height='5' rx='1' fill='var(--track-done)' opacity='0.7'></rect>
+                  <text x='103' y='101' class='text-[8px] tabular-nums fill-muted-foreground'>3 单</text>
+                </g>
+                <g>
+                  <text x='50' y='124' text-anchor='end' class='text-[10px] fill-muted-foreground'>王强</text>
+                  <rect x='54' y='114' width='100' height='10' rx='2' fill='var(--brand-primary)' opacity='0.55'></rect>
+                  <text x='158' y='123' class='text-[9px] tabular-nums fill-foreground'>¥12,737.5</text>
+                  <rect x='54' y='126' width='30' height='5' rx='1' fill='var(--track-done)' opacity='0.55'></rect>
+                  <text x='88' y='131' class='text-[8px] tabular-nums fill-muted-foreground'>2 单</text>
+                </g>
+                <g>
+                  <text x='50' y='154' text-anchor='end' class='text-[10px] fill-muted-foreground'>陈敏</text>
+                  <rect x='54' y='144' width='25' height='10' rx='2' fill='var(--brand-primary)' opacity='0.4'></rect>
+                  <text x='83' y='153' class='text-[9px] tabular-nums fill-foreground'>¥3,221</text>
+                  <rect x='54' y='156' width='15' height='5' rx='1' fill='var(--track-done)' opacity='0.4'></rect>
+                  <text x='73' y='161' class='text-[8px] tabular-nums fill-muted-foreground'>1 单</text>
+                </g>
+              </svg>
+              <div class='flex items-center justify-end gap-3 mt-1 text-xs'>
+                <div class='flex items-center gap-1'><span class='w-2.5 h-2.5 rounded-sm bg-primary'></span><span class='text-muted-foreground'>金额</span></div>
+                <div class='flex items-center gap-1'><span class='w-2.5 h-2.5 rounded-sm bg-track-done'></span><span class='text-muted-foreground'>订单数</span></div>
+              </div>
+            </div>
+          </section>
+
+          <section id='order-data-table' class='bg-card border border-border rounded-lg overflow-hidden'>
+            <div class='px-4 py-3 border-b border-border flex items-center justify-between'>
+              <h3 class='text-sm font-medium text-foreground'>063 订单明细</h3>
+              <span class='text-xs text-muted-foreground'>共 12 行 · 27 字段</span>
+            </div>
+            <div class='data-table-wrap'>
+              <table class='min-w-[1680px] w-full text-sm text-left border-collapse'>
+                <thead class='sticky-header bg-muted'>
+                  <tr class='text-xs uppercase tracking-wider text-muted-foreground'>
+                    <th colspan='6' class='px-3 py-2 border-b border-border text-center font-medium'>订单标识</th>
+                    <th colspan='4' class='px-3 py-2 border-b border-border text-center font-medium border-l border-border'>客户</th>
+                    <th colspan='5' class='px-3 py-2 border-b border-border text-center font-medium border-l border-border'>物料</th>
+                    <th colspan='7' class='px-3 py-2 border-b border-border text-center font-medium border-l border-border'>数量金额</th>
+                    <th colspan='2' class='px-3 py-2 border-b border-border text-center font-medium border-l border-border'>日期</th>
+                    <th colspan='1' class='px-3 py-2 border-b border-border text-center font-medium border-l border-border'>人员</th>
+                    <th colspan='2' class='px-3 py-2 border-b border-border text-center font-medium border-l border-border'>其他</th>
+                  </tr>
+                  <tr class='text-xs text-muted-foreground'>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap'>销售订单号</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap'>行号</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap'>交货单号</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap'>行号</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap'>送货单号</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap'>客户订单号</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap border-l border-border'>售达方编码</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap'>售达方名称</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap'>送达方编码</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap'>送达方名称</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap border-l border-border'>物料号</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap'>物料描述</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap'>客户物料号</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap'>批次号</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap'>工厂</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap border-l border-border text-right'>发货数量</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap text-right'>单价</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap text-right'>送货单价</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap text-right'>总价</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap text-right'>金额</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap text-center'>货币</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap text-right'>价格单位</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap border-l border-border'>创建日期</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap'>过账日期</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap border-l border-border'>订单创建人</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap border-l border-border'>期间名</th>
+                    <th class='px-3 py-2 font-medium whitespace-nowrap text-center'>借贷方向</th>
+                  </tr>
+                </thead>
+                <tbody class='divide-y divide-border'>
+                  <tr class='hover:bg-muted/50 transition-colors'>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0013278524</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>10</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0038727199</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>10</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>2607043868</td>
+                    <td class='px-3 py-2.5 text-foreground'>CGDD26020260601079</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>0200035897</td>
+                    <td class='px-3 py-2.5 text-foreground'>成都宏明双新</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0200035897</td>
+                    <td class='px-3 py-2.5 text-foreground'>成都宏明双新</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>FW00109202</td>
+                    <td class='px-3 py-2.5 text-foreground'>PA66-R40G30 BK201</td>
+                    <td class='px-3 py-2.5 text-foreground'>260.01.04.01.0129</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>260617008</td>
+                    <td class='px-3 py-2.5 tabular-nums text-center text-foreground'>1000</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground border-l border-border'>200.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>32.205</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>6441.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>6441.0</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>CNY</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>1</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>2026-06-22</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>2026-07-17</td>
+                    <td class='px-3 py-2.5 text-foreground border-l border-border'>熊燕群</td>
+                    <td class='px-3 py-2.5 text-muted-foreground border-l border-border'>—</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>S</td>
+                  </tr>
+                  <tr class='hover:bg-muted/50 transition-colors'>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0013278525</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>20</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0038727200</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>10</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>2607043869</td>
+                    <td class='px-3 py-2.5 text-foreground'>CGDD26020260601080</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>0200012345</td>
+                    <td class='px-3 py-2.5 text-foreground'>重庆天海电子</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0200012345</td>
+                    <td class='px-3 py-2.5 text-foreground'>重庆天海电子</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>FW00109203</td>
+                    <td class='px-3 py-2.5 text-foreground'>PA66-R40G30 BK202</td>
+                    <td class='px-3 py-2.5 text-foreground'>260.01.04.01.0130</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>260617009</td>
+                    <td class='px-3 py-2.5 tabular-nums text-center text-foreground'>1100</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground border-l border-border'>150.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>28.500</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>4275.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>4275.0</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>CNY</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>1</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>2026-06-23</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>2026-07-18</td>
+                    <td class='px-3 py-2.5 text-foreground border-l border-border'>张伟</td>
+                    <td class='px-3 py-2.5 text-muted-foreground border-l border-border'>—</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>S</td>
+                  </tr>
+                  <tr class='hover:bg-muted/50 transition-colors'>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0013278526</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>10</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0038727201</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>20</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>2607043870</td>
+                    <td class='px-3 py-2.5 text-foreground'>CGDD26020260601081</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>0200045678</td>
+                    <td class='px-3 py-2.5 text-foreground'>武汉光迅科技</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0200045678</td>
+                    <td class='px-3 py-2.5 text-foreground'>武汉光迅科技</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>FW00109204</td>
+                    <td class='px-3 py-2.5 text-foreground'>PA66-R40G30 BK203</td>
+                    <td class='px-3 py-2.5 text-foreground'>260.01.04.01.0131</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>260617010</td>
+                    <td class='px-3 py-2.5 tabular-nums text-center text-foreground'>2000</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground border-l border-border'>300.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>27.300</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>8190.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>8190.0</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>CNY</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>1</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>2026-06-24</td>
+                    <td class='px-3 py-2.5 tabular-nums text-state-error'>未发货</td>
+                    <td class='px-3 py-2.5 text-foreground border-l border-border'>李娜</td>
+                    <td class='px-3 py-2.5 text-muted-foreground border-l border-border'>—</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>H</td>
+                  </tr>
+                  <tr class='hover:bg-muted/50 transition-colors'>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0013278524</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>30</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0038727202</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>10</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>2607043871</td>
+                    <td class='px-3 py-2.5 text-foreground'>CGDD26020260601082</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>0200035897</td>
+                    <td class='px-3 py-2.5 text-foreground'>成都宏明双新</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0200035897</td>
+                    <td class='px-3 py-2.5 text-foreground'>成都宏明双新</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>FW00109202</td>
+                    <td class='px-3 py-2.5 text-foreground'>PA66-R40G30 BK201</td>
+                    <td class='px-3 py-2.5 text-foreground'>260.01.04.01.0129</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>260617011</td>
+                    <td class='px-3 py-2.5 tabular-nums text-center text-foreground'>1000</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground border-l border-border'>300.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>32.210</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>9663.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>9663.0</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>CNY</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>1</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>2026-06-25</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>2026-07-20</td>
+                    <td class='px-3 py-2.5 text-foreground border-l border-border'>熊燕群</td>
+                    <td class='px-3 py-2.5 text-muted-foreground border-l border-border'>—</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>S</td>
+                  </tr>
+                  <tr class='hover:bg-muted/50 transition-colors'>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0013278527</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>10</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0038727203</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>10</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>2607043872</td>
+                    <td class='px-3 py-2.5 text-foreground'>CGDD26020260601083</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>0200054321</td>
+                    <td class='px-3 py-2.5 text-foreground'>深圳比亚迪</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0200054321</td>
+                    <td class='px-3 py-2.5 text-foreground'>深圳比亚迪</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>FW00109205</td>
+                    <td class='px-3 py-2.5 text-foreground'>PBT-G30 BK</td>
+                    <td class='px-3 py-2.5 text-foreground'>260.01.04.01.0132</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>260617012</td>
+                    <td class='px-3 py-2.5 tabular-nums text-center text-foreground'>1100</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground border-l border-border'>200.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>28.000</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>5600.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>5600.0</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>CNY</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>1</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>2026-06-26</td>
+                    <td class='px-3 py-2.5 tabular-nums text-state-error'>未发货</td>
+                    <td class='px-3 py-2.5 text-foreground border-l border-border'>王强</td>
+                    <td class='px-3 py-2.5 text-muted-foreground border-l border-border'>—</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>H</td>
+                  </tr>
+                  <tr class='hover:bg-muted/50 transition-colors'>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0013278525</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>30</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0038727204</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>20</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>2607043873</td>
+                    <td class='px-3 py-2.5 text-foreground'>CGDD26020260601084</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>0200012345</td>
+                    <td class='px-3 py-2.5 text-foreground'>重庆天海电子</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0200012345</td>
+                    <td class='px-3 py-2.5 text-foreground'>重庆天海电子</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>FW00109206</td>
+                    <td class='px-3 py-2.5 text-foreground'>PA6-GF30</td>
+                    <td class='px-3 py-2.5 text-foreground'>260.01.04.01.0133</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>260617013</td>
+                    <td class='px-3 py-2.5 tabular-nums text-center text-foreground'>2000</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground border-l border-border'>160.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>24.000</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>3840.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>3840.0</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>CNY</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>1</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>2026-06-27</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>2026-07-19</td>
+                    <td class='px-3 py-2.5 text-foreground border-l border-border'>张伟</td>
+                    <td class='px-3 py-2.5 text-muted-foreground border-l border-border'>—</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>S</td>
+                  </tr>
+                  <tr class='hover:bg-muted/50 transition-colors'>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0013278526</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>30</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0038727205</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>10</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>2607043874</td>
+                    <td class='px-3 py-2.5 text-foreground'>CGDD26020260601085</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>0200045678</td>
+                    <td class='px-3 py-2.5 text-foreground'>武汉光迅科技</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0200045678</td>
+                    <td class='px-3 py-2.5 text-foreground'>武汉光迅科技</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>FW00109202</td>
+                    <td class='px-3 py-2.5 text-foreground'>PA66-R40G30 BK201</td>
+                    <td class='px-3 py-2.5 text-foreground'>260.01.04.01.0129</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>260617014</td>
+                    <td class='px-3 py-2.5 tabular-nums text-center text-foreground'>1000</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground border-l border-border'>400.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>32.210</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>12884.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>12884.0</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>CNY</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>1</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>2026-06-28</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>2026-07-21</td>
+                    <td class='px-3 py-2.5 text-foreground border-l border-border'>李娜</td>
+                    <td class='px-3 py-2.5 text-muted-foreground border-l border-border'>—</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>S</td>
+                  </tr>
+                  <tr class='hover:bg-muted/50 transition-colors'>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0013278528</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>10</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0038727206</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>10</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>2607043875</td>
+                    <td class='px-3 py-2.5 text-foreground'>CGDD26020260601086</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>0200067890</td>
+                    <td class='px-3 py-2.5 text-foreground'>东莞立讯精密</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0200067890</td>
+                    <td class='px-3 py-2.5 text-foreground'>东莞立讯精密</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>FW00109203</td>
+                    <td class='px-3 py-2.5 text-foreground'>PA66-R40G30 BK202</td>
+                    <td class='px-3 py-2.5 text-foreground'>260.01.04.01.0130</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>260617015</td>
+                    <td class='px-3 py-2.5 tabular-nums text-center text-foreground'>1100</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground border-l border-border'>250.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>28.550</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>7137.5</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>7137.5</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>CNY</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>1</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>2026-06-29</td>
+                    <td class='px-3 py-2.5 tabular-nums text-state-error'>未发货</td>
+                    <td class='px-3 py-2.5 text-foreground border-l border-border'>王强</td>
+                    <td class='px-3 py-2.5 text-muted-foreground border-l border-border'>—</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>H</td>
+                  </tr>
+                  <tr class='hover:bg-muted/50 transition-colors'>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0013278524</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>40</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0038727207</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>20</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>2607043876</td>
+                    <td class='px-3 py-2.5 text-foreground'>CGDD26020260601087</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>0200035897</td>
+                    <td class='px-3 py-2.5 text-foreground'>成都宏明双新</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0200035897</td>
+                    <td class='px-3 py-2.5 text-foreground'>成都宏明双新</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>FW00109205</td>
+                    <td class='px-3 py-2.5 text-foreground'>PBT-G30 BK</td>
+                    <td class='px-3 py-2.5 text-foreground'>260.01.04.01.0132</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>260617016</td>
+                    <td class='px-3 py-2.5 tabular-nums text-center text-foreground'>1000</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground border-l border-border'>150.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>30.000</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>4500.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>4500.0</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>CNY</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>1</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>2026-06-30</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>2026-07-22</td>
+                    <td class='px-3 py-2.5 text-foreground border-l border-border'>熊燕群</td>
+                    <td class='px-3 py-2.5 text-muted-foreground border-l border-border'>—</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>S</td>
+                  </tr>
+                  <tr class='hover:bg-muted/50 transition-colors'>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0013278527</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>20</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0038727208</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>20</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>2607043877</td>
+                    <td class='px-3 py-2.5 text-foreground'>CGDD26020260601088</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>0200054321</td>
+                    <td class='px-3 py-2.5 text-foreground'>深圳比亚迪</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0200054321</td>
+                    <td class='px-3 py-2.5 text-foreground'>深圳比亚迪</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>FW00109204</td>
+                    <td class='px-3 py-2.5 text-foreground'>PA66-R40G30 BK203</td>
+                    <td class='px-3 py-2.5 text-foreground'>260.01.04.01.0131</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>260617017</td>
+                    <td class='px-3 py-2.5 tabular-nums text-center text-foreground'>2000</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground border-l border-border'>350.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>27.000</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>9450.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>9450.0</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>CNY</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>1</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>2026-07-01</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>2026-07-23</td>
+                    <td class='px-3 py-2.5 text-foreground border-l border-border'>张伟</td>
+                    <td class='px-3 py-2.5 text-muted-foreground border-l border-border'>—</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>S</td>
+                  </tr>
+                  <tr class='hover:bg-muted/50 transition-colors'>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0013278526</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>40</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0038727209</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>10</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>2607043878</td>
+                    <td class='px-3 py-2.5 text-foreground'>CGDD26020260601089</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>0200045678</td>
+                    <td class='px-3 py-2.5 text-foreground'>武汉光迅科技</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0200045678</td>
+                    <td class='px-3 py-2.5 text-foreground'>武汉光迅科技</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>FW00109206</td>
+                    <td class='px-3 py-2.5 text-foreground'>PA6-GF30</td>
+                    <td class='px-3 py-2.5 text-foreground'>260.01.04.01.0133</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>260617018</td>
+                    <td class='px-3 py-2.5 tabular-nums text-center text-foreground'>1100</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground border-l border-border'>100.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>24.000</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>2400.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>2400.0</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>CNY</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>1</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>2026-07-02</td>
+                    <td class='px-3 py-2.5 tabular-nums text-state-error'>未发货</td>
+                    <td class='px-3 py-2.5 text-foreground border-l border-border'>李娜</td>
+                    <td class='px-3 py-2.5 text-muted-foreground border-l border-border'>—</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>H</td>
+                  </tr>
+                  <tr class='hover:bg-muted/50 transition-colors'>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0013278529</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>10</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0038727210</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>10</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>2607043879</td>
+                    <td class='px-3 py-2.5 text-foreground'>CGDD26020260601090</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>0200067890</td>
+                    <td class='px-3 py-2.5 text-foreground'>东莞立讯精密</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>0200067890</td>
+                    <td class='px-3 py-2.5 text-foreground'>东莞立讯精密</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>FW00109202</td>
+                    <td class='px-3 py-2.5 text-foreground'>PA66-R40G30 BK201</td>
+                    <td class='px-3 py-2.5 text-foreground'>260.01.04.01.0129</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>260617019</td>
+                    <td class='px-3 py-2.5 tabular-nums text-center text-foreground'>1000</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground border-l border-border'>100.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>32.210</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>3221.0</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>3221.0</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>CNY</td>
+                    <td class='px-3 py-2.5 tabular-nums text-right text-foreground'>1</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground border-l border-border'>2026-07-03</td>
+                    <td class='px-3 py-2.5 tabular-nums text-foreground'>2026-07-24</td>
+                    <td class='px-3 py-2.5 text-foreground border-l border-border'>陈敏</td>
+                    <td class='px-3 py-2.5 text-muted-foreground border-l border-border'>—</td>
+                    <td class='px-3 py-2.5 text-center text-foreground'>S</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
